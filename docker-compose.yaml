@@ -91,6 +91,25 @@ services:
 
         restart: unless-stopped
 
+    api:
+        build: keeper
+        ports:
+        - "8000:8000"
+        volumes:
+        - ./keeper:/app        # Optional: for live code reload in development
+        environment:
+            - ENV=development
+            - DB_HOST=postgres_container
+            - DB_NAME=postgres
+            - DB_USER=postgres
+            - DB_PASS=changeme
+        restart: unless-stopped
+        depends_on:
+            - postgres
+        networks:
+            - postgres
+
+
 networks:
     postgres:
         driver: bridge
