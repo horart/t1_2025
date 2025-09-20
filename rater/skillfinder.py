@@ -26,7 +26,7 @@ class SkillFinder:
                 cur.execute("""
                     SELECT id
                     FROM skills
-                    ORDER BY embeddings <-> (%s::vector)
+                    ORDER BY embeddings <=> (%s::vector)
                     LIMIT 1;
                 """, (embedding,))
                 fetched = cur.fetchone()
