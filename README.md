@@ -7,7 +7,13 @@ T1 hackathon 2025 HR Consultant
 git config --global core.autocrlf false
 ```
 
-Запуск
+### Первый запуск
+```
+RESTORE_DUMP=1 docker compose up
+```
+Также используйте, если хотите сбросить до исходного состояния
+
+### Последующие запуски
 ```
 docker compose up
 ```
