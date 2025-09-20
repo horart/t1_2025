@@ -1,0 +1,186 @@
+/* Стили для страницы курсов */
+.current-courses {
+    margin-bottom: 40px;
+}
+
+.course-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.course-header {
+    margin-bottom: 20px;
+}
+
+.course-header h2 {
+    font-size: 22px;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.course-teacher {
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+.progress-container {
+    margin-top: 15px;
+}
+
+.progress-label {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin-bottom: 8px;
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: #ecf0f1;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.progress-value {
+    height: 100%;
+    background: linear-gradient(to right, #3498db, #2ecc71);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.next-lesson {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.deadline {
+    font-size: 14px;
+    color: #e74c3c;
+    font-weight: 500;
+}
+
+/* Доступные курсы */
+.available-courses {
+    margin-top: 40px;
+}
+
+.available-courses h2 {
+    font-size: 22px;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #3498db;
+}
+
+.course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.course-item {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+.course-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.course-category {
+    position: absolute;
+    top: -10px;
+    right: 15px;
+    background-color: #3498db;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.course-item h3 {
+    font-size: 18px;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    margin-right: 80px;
+}
+
+.course-description {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.course-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: #7f8c8d;
+}
+
+.course-rating {
+    margin-bottom: 15px;
+}
+
+.rating-value {
+    font-weight: 700;
+    color: #f39c12;
+}
+
+.teacher-name {
+    font-size: 13px;
+    color: #7f8c8d;
+}
+
+.enroll-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.enroll-button:hover {
+    background-color: #2980b9;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .course-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .progress-info {
+        flex-direction: column;
+    }
+
+    .course-meta {
+        flex-direction: column;
+    }
+
+    .course-meta span {
+        margin-bottom: 5px;
+    }
+}

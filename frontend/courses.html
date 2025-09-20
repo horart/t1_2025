@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Курсы - HR Консультант</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/courses.css">
+</head>
+<body>
+    <!-- Шапка с гамбургер-меню -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">HR Консультант</div>
+            <nav class="nav" id="nav">
+                <ul>
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="pages/career.html">Карьера</a></li>
+                    <li><a href="pages/achievements.html">Достижения</a></li>
+                    <li><a href="pages/dashboard.html">Дашборд</a></li>
+                    <li><a href="pages/tests.html">Тесты</a></li>
+                    <li><a href="courses.html" class="active">Курсы</a></li>
+                </ul>
+            </nav>
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <h1>HR Консультант: Курсы</h1>
+
+        <!-- Текущие курсы -->
+        <section class="current-courses">
+            <div class="course-card">
+                <div class="course-header">
+                    <h2>Advanced React Patterns</h2>
+                    <span class="course-teacher">Преподаватель: Анна Петрова</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-label">Прогресс</div>
+                    <div class="progress-bar">
+                        <div class="progress-value" style="width: 65%;"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span>Следующий урок:</span>
+                        <span class="next-lesson">Custom Hooks Best Practices</span>
+                    </div>
+                    <div class="deadline">Дедлайн: 2024-10-30</div>
+                </div>
+            </div>
+
+            <div class="course-card">
+                <div class="course-header">
+                    <h2>Leadership Fundamentals</h2>
+                    <span class="course-teacher">Преподаватель: Михаил Сидоров</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-label">Прогресс</div>
+                    <div class="progress-bar">
+                        <div class="progress-value" style="width: 30%;"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span>Следующий урок:</span>
+                        <span class="next-lesson">Effective Communication</span>
+                    </div>
+                    <div class="deadline">Дедлайн: 2024-11-15</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- Доступные курсы -->
+        <section class="available-courses">
+            <h2>Доступные курсы</h2>
+
+            <div class="course-grid">
+                <div class="course-item">
+                    <div class="course-category">Технические навыки</div>
+                    <h3>TypeScript Deep Dive</h3>
+                    <p class="course-description">Изучение продвинутых концепций TypeScript для корпоративной разработки</p>
+                    <div class="course-meta">
+                        <span class="course-duration">8 недель</span>
+                        <span class="course-enrolled">45 записались</span>
+                    </div>
+                    <div class="course-rating">
+                        <span class="rating-value">4.8</span>
+                        <span class="teacher-name">- Елена Козлова</span>
+                    </div>
+                    <button class="enroll-button">Записаться</button>
+                </div>
+
+                <div class="course-item">
+                    <div class="course-category">Архитектура</div>
+                    <h3>System Design Principles</h3>
+                    <p class="course-description">Проектирование масштабируемых систем и архитектурные паттерны</p>
+                    <div class="course-meta">
+                        <span class="course-duration">10 недель</span>
+                        <span class="course-enrolled">28 записались</span>
+                    </div>
+                    <div class="course-rating">
+                        <span class="rating-value">4.9</span>
+                        <span class="teacher-name">- Ольга Федорова</span>
+                    </div>
+                    <button class="enroll-button">Записаться</button>
+                </div>
+
+                <div class="course-item">
+                    <div class="course-category">Управление</div>
+                    <h3>Project Management Essentials</h3>
+                    <p class="course-description">Основы управления проектами и agile-методологий</p>
+                    <div class="course-meta">
+                        <span class="course-duration">6 недель</span>
+                        <span class="course-enrolled">32 записались</span>
+                    </div>
+                    <div class="course-rating">
+                        <span class="rating-value">4.6</span>
+                        <span class="teacher-name">- Дмитрий Иванов</span>
+                    </div>
+                    <button class="enroll-button">Записаться</button>
+                </div>
+
+                <div class="course-item">
+                    <div class="course-category">Аналитика</div>
+                    <h3>Data Analysis with Python</h3>
+                    <p class="course-description">Анализ данных и машинное обучение с использованием Python</p>
+                    <div class="course-meta">
+                        <span class="course-duration">12 недель</span>
+                        <span class="course-enrolled">38 записались</span>
+                    </div>
+                    <div class="course-rating">
+                        <span class="rating-value">4.7</span>
+                        <span class="teacher-name">- Алексей Морозов</span>
+                    </div>
+                    <button class="enroll-button">Записаться</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
