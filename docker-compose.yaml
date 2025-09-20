@@ -45,7 +45,7 @@ services:
         volumes:
             - ./initdb:/docker-entrypoint-initdb.d
             - .:/var/lib/postgresql/data
-            - ./db/postgres/dump.sql:/docker-entrypoint-restore/dump.sql:ro
+            - ./db/skilldb/dump.sql:/docker-entrypoint-restore/dump.sql:ro
             - ./db/restore_if_needed.sh:/docker-entrypoint-restore.d/restore-if-needed.sh
 
         ports:
@@ -184,6 +184,27 @@ services:
             - POSTGRES_PORT=5432
             - POSTGRES_PASSWORD=changeme
             - POSTGRES_DATABASE=skilldb
+
+    projecter:
+        build:
+            dockerfile: projecter/Dockerfile
+        depends_on:
+            - postgres
+        networks:
+            - heads
+            - postgres
+        ports:
+        - "8005:8000"
+        volumes:
+        - ./common/:/app/common/
+        - ./projecter/:/app/projecter/
+        environment:
+            - LLM_API_KEY=sk-EmYVgdtgQpI5dtcukj5otQ
+            - POSTGRES_HOST=postgres_container
+            - POSTGRES_USER=postgres
+            - POSTGRES_PORT=5432
+            - POSTGRES_PASSWORD=changeme
+            - POSTGRES_DATABASE=keeperdb
         
 
     surveyer:
@@ -198,27 +219,6 @@ services:
         environment:
             - DATABASE_URL=postgresql://postgres:changeme@postgres_container:5432/keeperdb
 
-    projecter:
-        build:
-            dockerfile: projecter/Dockerfile
-        depends_on:
-            - pos
-        networks:
-            - heads
-            - postgres
-        ports:
-          - "8001:8000"
-        volumes:
-          - ./common/:/app/common/
-          - ./rater/:/app/rater/
-        environment:
-            - LLM_API_KEY=sk-EmYVgdtgQpI5dtcukj5otQ
-            - POSTGRES_HOST=skilldb
-            - POSTGRES_USER=postgres
-            - POSTGRES_PORT=5432
-            - POSTGRES_PASSWORD=changeme
-            - POSTGRES_DATABASE=skilldb
-
     api:
         build: keeper
         ports:
@@ -228,7 +228,7 @@ services:
         environment:
             - ENV=development
             - DB_HOST=postgres_container
-            - DB_NAME=postgres
+            - DB_NAME=keeperdb
             - DB_USER=postgres
             - DB_PASS=changeme
         restart: unless-stopped
@@ -239,10 +239,45 @@ services:
             - heads
 
 
-    networks:
-        postgres:
-            driver: bridge
-        skilldb:
-            driver: bridge
-        heads:
-            driver: bridge
+networks:
+    postgres:
+        driver: bridge
+    skilldb:
+        driver: bridge
+    heads:
+        driver: bridge
+
+# ============ !!!!! ============
+# Create 'pgadmin' dir
+# mkdir pgadmin && sudo chown -R 5050:80 pgadmin
+# -------------------------------
+# Start:
+# docker-compose --compatibility up -d
+# -------------------------------
+# Access to Postgres:
+# localhost:5432
+# Username: postgres (as a default)
+# Password: changeme (as a default)
+# -------------------------------
+# Access to PgAdmin:
+# URL: http://localhost:5050
+# EMAIL: pgadmin@example.com
+# Password: admin
+# -------------------------------
+# Connect to Postgres from PgAdmin
+# Host name/address: postgres_container
+# Port: 5432
+# Maintenance DB: postgres
+# Password: changeme
+# -------------------------------
+# Stop lifted containers:
+# docker-compose --compatibility stop
+# -------------------------------
+# Start stopped containers
+# docker-compose --compatibility start
+# -------------------------------
+# Stop and delete containers and network:
+# docker-compose --compatibility down
+# -------------------------------
+# Clear project
+# sudo rm -r pgadmin pgdata
