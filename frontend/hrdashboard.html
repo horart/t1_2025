@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аналитика - HR Консультант</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/hranalytics.css">
+</head>
+<body>
+    <!-- Шапка с гамбургер-меню -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">HR Консультант</div>
+            <nav class="nav" id="nav">
+                <ul>
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="pages/career.html">Карьера</a></li>
+                    <li><a href="pages/achievements.html">Достижения</a></li>
+                    <li><a href="pages/dashboard.html">Дашборд</a></li>
+                    <li><a href="pages/tests.html">Тесты</a></li>
+                    <li><a href="pages/courses.html">Курсы</a></li>
+                    <li><a href="shop.html">Магазин</a></li>
+                    <li><a href="profile.html">Профиль</a></li>
+                    <li><a href="chat.html">Чат</a></li>
+                    <li><a href="analytics.html" class="active">Аналитика</a></li>
+                </ul>
+            </nav>
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="analytics-header">
+            <h1>HR Консультант: Аналитика</h1>
+
+        </div>
+
+        <div class="analytics-content">
+            <!-- Верхняя секция с сеткой 2/3 + 1/3 -->
+            <div class="top-section">
+                <!-- Блок сводки -->
+                <section class="summary-section">
+                    <h2>Сводка</h2>
+                    <div class="summary-cards">
+                        <div class="summary-card">
+                            <div class="card-icon blue">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8 14V17M12 14V17M16 14V17M3 11H21M3 7H21M5 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="card-content">
+                                <h3>Новых задач</h3>
+                                <span class="card-value">8</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <div class="card-icon green">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="card-content">
+                                <h3>Открытых вакансий</h3>
+                                <span class="card-value">5</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <div class="card-icon purple">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="card-content">
+                                <h3>Завершённых проектов</h3>
+                                <span class="card-value">24</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <div class="card-icon orange">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13M16 3.13C16.8604 3.3503 17.623 3.8507 18.1676 4.55231C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88M13 7C13 9.20914 11.2091 11 9 11C6.79086 11 5 9.20914 5 7C5 4.79086 6.79086 3 9 3C11.2091 3 13 4.79086 13 7Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="card-content">
+                                <h3>Сотрудников</h3>
+                                <span class="card-value">46</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Блок лидерборда -->
+                <section class="leaderboard-section">
+                    <h2>Лидерборд</h2>
+                    <div class="leaderboard-card">
+                        <div class="leaderboard-item">
+                            <span class="leader-rank">1</span>
+                            <span class="leader-name">Иван</span>
+                            <span class="leader-score">98%</span>
+                        </div>
+                        <div class="leaderboard-item">
+                            <span class="leader-rank">2</span>
+                            <span class="leader-name">Ахмед</span>
+                            <span class="leader-score">92%</span>
+                        </div>
+                        <div class="leaderboard-item">
+                            <span class="leader-rank">3</span>
+                            <span class="leader-name">София</span>
+                            <span class="leader-score">89%</span>
+                        </div>
+                        <div class="leaderboard-item">
+                            <span class="leader-rank">4</span>
+                            <span class="leader-name">Марк</span>
+                            <span class="leader-score">87%</span>
+                        </div>
+                        <div class="leaderboard-item">
+                            <span class="leader-rank">5</span>
+                            <span class="leader-name">Анна</span>
+                            <span class="leader-score">85%</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Дополнительные блоки аналитики -->
+            <section class="charts-section">
+                <div class="chart-card">
+                    <h3>Проекты</h3>
+                    <div class="chart-placeholder">
+                        <p>График проектов</p>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>Задачи</h3>
+                    <div class="chart-placeholder">
+                        <p>График задач</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="ai-section">
+                <h2>ИИ Аналитика</h2>
+                <div class="ai-card">
+                    <div class="ai-content">
+                        <h3>Рекомендации от ИИ</h3>
+                        <p>На основе анализа данных, ИИ рекомендует обратить внимание на отдел разработки, где наблюдается повышенная нагрузка на сотрудников. Рассмотрите возможность распределения задач или найма дополнительного персонала.</p>
+                        <button class="ai-button">Подробнее</button>
+                    </div>
+                    <div class="ai-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 12L11 14L15 10M12 3C13.3904 3 14.7613 3.30699 16.1114 3.92146C17.4614 4.53593 18.6619 5.44051 19.7138 6.58631C20.7657 7.73212 21.6442 9.09608 22.3492 10.5788C23.0543 12.0615 23.3696 13.6334 23.3696 15.2941C23.3696 16.9549 23.0543 18.5268 22.3492 20.0095C21.6442 21.4922 20.7657 22.8562 19.7138 24.002C18.6619 25.1478 17.4614 26.0524 16.1114 26.6668C14.7613 27.2813 13.3904 27.5883 12 27.5883C10.6096 27.5883 9.23867 27.2813 7.88864 26.6668C6.53861 26.0524 5.33808 25.1478 4.28618 24.002C3.23428 22.8562 2.35577 21.4922 1.65072 20.0095C0.945668 18.5268 0.630371 16.9549 0.630371 15.2941C0.630371 13.6334 0.945668 12.0615 1.65072 10.5788C2.35577 9.09608 3.23428 7.73212 4.28618 6.58631C5.33808 5.44051 6.53861 4.53593 7.88864 3.92146C9.23867 3.30699 10.6096 3 12 3Z" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/menu.js"></script>
+</body>
+</html>

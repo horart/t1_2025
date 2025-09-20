@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Консультант: Аналитика</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Шапка с гамбургер-меню -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">HR Консультант</div>
+            <nav class="nav" id="nav">
+                <ul>
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="pages/career.html">Карьера</a></li>
+                    <li><a href="pages/achievements.html">Достижения</a></li>
+                    <li><a href="pages/dashboard.html">Дашборд</a></li>
+                </ul>
+            </nav>
+
+        </div>
+    </header>
+
+    <main class="main-container">
+
+
+
+        <div class="content-wrapper">
+            <!-- Левая колонка - карьерный путь -->
+            <section class="career-path">
+                <h2>Карьерный путь</h2>
+                <label class="career-item">
+                    <input type="checkbox" class="career-checkbox" checked disabled>
+                    <span class="checkmark checkmark-green"></span>
+                    <span class="career-label">Junior Developer 2020</span>
+                </label>
+                <label class="career-item">
+                    <input type="checkbox" class="career-checkbox" checked disabled>
+                    <span class="checkmark checkmark-green"></span>
+                    <span class="career-label">Middle Developer 2022</span>
+                </label>
+                <label class="career-item">
+                    <input type="checkbox" class="career-checkbox " checked disabled>
+                    <span class="checkmark checkmark-blue"></span>
+                    <span class="career-label current">Senior Developer 2024 (Текущая)</span>
+                </label>
+                <label class="career-item">
+                    <input type="checkbox" class="career-checkbox" disabled>
+                    <span class="checkmark  checkmark-gray"></span>
+                    <span class="career-label">Team Lead 2025</span>
+                </label>
+                <label class="career-item">
+                    <input type="checkbox" class="career-checkbox " disabled>
+                    <span class="checkmark checkmark-gray"></span>
+                    <span class="career-label">Tech Lead 2026</span>
+                </label>
+            </section>
+            
+            <!-- Правая колонка - ключевые достижения -->
+            <section class="achievements">
+                <h2>Ключевые достижения</h2>
+                <div class="achievement-item" style="--color: #ff7675;">
+
+                    <div class="achievement-content">
+                        <h3>Количество проектов</h3>
+
+                    </div>
+                    <div class="achievement-content">
+                        <h3>14</h3>
+
+                    </div>
+                </div>
+                <div class="achievement-item" style="--color: #74b9ff;">
+
+                    <div class="achievement-content">
+                        <h3>Менторство</h3>
+                        <p>по python</p>
+                    </div>
+                    <div class="achievement-content">
+                        <h3>2 человека</h3>
+
+                    </div>
+                </div>
+                <div class="achievement-item" style="--color: #55efc4;">
+
+                    <div class="achievement-content">
+                        <h3>Сертификации</h3>
+
+                    </div>
+                    <div class="achievement-content">
+                        <h3>5</h3>
+
+                    </div>
+                </div>
+                <div class="achievement-item" style="--color: #ffeaa7;">
+
+                    <div class="achievement-content">
+                        <h3>Лет в компании</h3>
+                    </div>
+                    <div class="achievement-content">
+                        <h3>2</h3>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <section class="leaderboard">
+            <h2>Лидерборд</h2>
+            <ol>
+                <li><span class="highlight">Ванёк</span> <span class="user-score">1500</span></li>
+                <li><span class="highlight">Ахмед</span> <span class="user-score">1499</span></li>
+                <li><span class="highlight">Ахмет</span> <span class="user-score">1495</span></li>
+                <li><span class="highlight">Ванёк</span> <span class="user-score">1490</span></li>
+                <li><span class="highlight">Ванёк</span> <span class="user-score">1485</span></li>
+            </ol>
+            
+            <div class="current-user">
+                <span class="highlight">Ты</span> 1110
+            </div>
+        </section>
+        
+        <div class="divider"></div>
+        
+        <!-- Секция с многоэтапным прогрессбаром -->
+        <section class="progress-section">
+            <h2>Прогресс</h2>
+            <div class="multi-step-progress">
+                <div class="progress-steps">
+                    <div class="step active">
+                        <div class="step-icon">1</div>
+                        <div class="step-label">Начало</div>
+                    </div>
+                    <div class="step active">
+                        <div class="step-icon">2</div>
+                        <div class="step-label">Скидка в рестораны</div>
+                    </div>
+                    <div class="step active">
+                        <div class="step-icon">3</div>
+                        <div class="step-label">Gold Priot</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">4</div>
+                        <div class="step-label">Бесплатный курс</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">5</div>
+                        <div class="step-label">Эксклюзивные награды</div>
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: 15%;"></div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
