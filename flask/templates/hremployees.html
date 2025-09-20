@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сотрудники - HR Консультант</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/hremployees.css">
+</head>
+<body>
+    <!-- Шапка с гамбургер-меню -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">HR Консультант</div>
+            <nav class="nav" id="nav">
+                <ul>
+                    <li><a href="/hremployees" class="active">Сотрудники</a></li>
+                    <li><a href="/projects">Проекты</a></li>
+                    <li><a href="/hrdashboard">Аналитика</a></li>
+                    <li><a href="/hrchat">Аналитика</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="employees-header">
+            <h1>HR Консультант: Сотрудники</h1>
+            <div class="search-box">
+                <input type="text" placeholder="Поиск сотрудников...">
+                <button>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="filters-section">
+            <button class="filter-btn active">Все</button>
+            <button class="filter-btn">По рейтингу</button>
+            <button class="filter-btn">По статусу</button>
+            <button class="filter-btn">Этап</button>
+        </div>
+
+        <div class="employees-grid">
+            <!-- Карточка сотрудника 1 -->
+            <div class="employee-card">
+                <div class="employee-header">
+                    <div class="employee-avatar">ИС</div>
+                    <div class="employee-info">
+                        <h3>Иван Сергеев</h3>
+                        <p>Senior Backend</p>
+                    </div>
+                </div>
+                <div class="employee-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Статус</span>
+                        <span class="detail-value">
+                            <span class="status-badge status-working">Работает</span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Рейтинг</span>
+                        <span class="detail-value">
+                            <div class="rating-stars">
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                            </div>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Карточка сотрудника 2 -->
+            <div class="employee-card">
+                <div class="employee-header">
+                    <div class="employee-avatar">АС</div>
+                    <div class="employee-info">
+                        <h3>Алина Смирнова</h3>
+                        <p>Middle QA</p>
+                    </div>
+                </div>
+                <div class="employee-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Статус</span>
+                        <span class="detail-value">
+                            <span class="status-badge status-looking">Ищет проект</span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Рейтинг</span>
+                        <span class="detail-value">
+                            <div class="rating-stars">
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">☆</span>
+                            </div>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Карточка сотрудника 3 -->
+            <div class="employee-card">
+                <div class="employee-header">
+                    <div class="employee-avatar">МП</div>
+                    <div class="employee-info">
+                        <h3>Максим Петров</h3>
+                        <p>Junior Frontend</p>
+                    </div>
+                </div>
+                <div class="employee-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Статус</span>
+                        <span class="detail-value">
+                            <span class="status-badge status-learning">Обучается</span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Рейтинг</span>
+                        <span class="detail-value">
+                            <div class="rating-stars">
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">☆</span>
+                                <span class="star">☆</span>
+                            </div>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Карточка сотрудника 4 -->
+            <div class="employee-card">
+                <div class="employee-header">
+                    <div class="employee-avatar">ЕО</div>
+                    <div class="employee-info">
+                        <h3>Елена Орлова</h3>
+                        <p>Data Analyst</p>
+                    </div>
+                </div>
+                <div class="employee-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Статус</span>
+                        <span class="detail-value">
+                            <span class="status-badge status-working">Работает</span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Рейтинг</span>
+                        <span class="detail-value">
+                            <div class="rating-stars">
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">☆</span>
+                            </div>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/menu.js"></script>
+    <script>
+        // Простой скрипт для переключения активного состояния фильтров
+        document.querySelectorAll('.filter-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

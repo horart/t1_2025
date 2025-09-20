@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Курсы - HR Консультант</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/courses.css') }}">
+</head>
+<body>
+<header class="header">
+        <div class="header-container">
+            <div class="logo">HR Консультант</div>
+            <nav class="nav" id="nav">
+                <ul>
+                    <li><a href="/" class="active">Главная</a></li>
+                    <li><a href="/market">Магазин</a></li>
+                    <li><a href="/courses">Курсы</a></li>
+                    <li><a href="/tests">Тесты</a></li>
+                    <li><a href="/chat">Чат</a></li>
+                    <li><a href="/analytics">Аналитика</a></li>
+                    <li><a href="/userlk">Личный кабинет</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <h1>HR Консультант: Курсы</h1>
+
+        <!-- Текущие курсы -->
+        <section class="current-courses">
+
+            {% for cours in it_courses%}
+            <div class="course-card">
+                <div class="course-header">
+                    <h2>{{ cours["name"]}}</h2>
+                    <span class="course-teacher">{{ cours["description"]}}</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-label">Прогресс</div>
+                    {% if cours["course_completed"] != "None" %}
+                      <div class="progress-bar">
+                        <div class="progress-value" style="width: 30%;"></div>
+                    </div>
+                    {% else %}
+                      <div class="progress-bar">
+                        <div class="progress-value" style="width: 100%;"></div>
+                    </div>
+                    {% endif %}
+
+                    <div class="deadline">Курс начат: {{cours["course_started"][:10]}}</div>
+                </div>
+            </div>
+            {% endfor %}
+
+
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- Доступные курсы -->
+        <section class="available-courses">
+            <h2>Доступные курсы</h2>
+
+            <div class="course-grid">
+
+
+                {% for cours in all_courses%}
+                    <div class="course-item">
+                        <div class="course-category">Технические навыки</div>
+                        <h3>{{cours["name"]}}</h3>
+                        <p class="course-description">{{cours["description"]}}</p>
+                        <div class="course-meta">
+                            <span class="course-duration">{{cours["hardness"]*3}} недель(-и)</span>
+                            <span class="course-enrolled">{{cours["hardness"]*7}} записей</span>
+                        </div>
+                        <div class="course-rating">
+                            <span class="rating-value">{{cours["hardness"]}}</span>
+                            <span class="teacher-name"> Сложность</span>
+                        </div>
+                        <button class="enroll-button">Записаться</button>
+                    </div>
+                {% endfor %}
+
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Консультант: Аналитика</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <!-- Шапка с гамбургер-меню -->
+<header class="header">
+        <div class="header-container">
+            <div class="logo">HR Консультант</div>
+            <nav class="nav" id="nav">
+                <ul>
+                    <li><a href="/" class="active">Главная</a></li>
+                    <li><a href="/market">Магазин</a></li>
+                    <li><a href="/courses">Курсы</a></li>
+                    <li><a href="/tests">Тесты</a></li>
+                    <li><a href="/chat">Чат</a></li>
+                    <li><a href="/analytics">Аналитика</a></li>
+                    <li><a href="/userlk">Личный кабинет</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-container">
+
+
+
+        <div class="content-wrapper">
+            <!-- Левая колонка - карьерный путь -->
+            <section class="career-path">
+                <h2>Карьерный путь</h2>
+                {%for job in range(carier_len-2) %}
+                <label class="career-item">
+                    <input type="checkbox" class="career-checkbox" checked disabled>
+                    <span class="checkmark checkmark-green"></span>
+                    <span class="career-label">{{carier_path[job]["position"]}}</span>
+                </label>
+                {% endfor %}
+                <label class="career-item">
+                    <input type="checkbox" class="career-checkbox " checked disabled>
+                    <span class="checkmark checkmark-blue"></span>
+                    <span class="career-label current">{{carier_path[carier_len-1]["position"]}}</span>
+                </label>
+
+            </section>
+            
+            <!-- Правая колонка - ключевые достижения -->
+            <section class="achievements">
+                <h2>Ключевые достижения</h2>
+                <div class="achievement-item" style="--color: #ff7675;">
+
+                    <div class="achievement-content">
+                        <h3>Количество проектов</h3>
+
+                    </div>
+                    <div class="achievement-content">
+                        <h3>{{projects_len}}</h3>
+
+                    </div>
+                </div>
+                <div class="achievement-item" style="--color: #74b9ff;">
+
+                    <div class="achievement-content">
+                        <h3>Менторство</h3>
+                        <p>по python</p>
+                    </div>
+                    <div class="achievement-content">
+                        <h3>2 человека</h3>
+
+                    </div>
+                </div>
+                <div class="achievement-item" style="--color: #55efc4;">
+
+                    <div class="achievement-content">
+                        <h3>Сертификации</h3>
+
+                    </div>
+                    <div class="achievement-content">
+                        <h3>5</h3>
+
+                    </div>
+                </div>
+                <div class="achievement-item" style="--color: #ffeaa7;">
+
+                    <div class="achievement-content">
+                        <h3>Лет в компании</h3>
+                    </div>
+                    <div class="achievement-content">
+                        <h3>{{years_old_work}}</h3>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <section class="leaderboard">
+            <h2>Лидерборд</h2>
+            <ol>
+                {% for leader in leaderboard: %}
+                <li><span class="highlight">{{leader["name"]}}</span> <span class="user-score">{{leader["rcoins"]}}</span></li>
+                {% endfor %}
+
+            </ol>
+            
+            <div class="current-user">
+                <span class="highlight">Ты</span> {{this_worker["rcoins"]}}
+            </div>
+        </section>
+        
+        <div class="divider"></div>
+        
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
