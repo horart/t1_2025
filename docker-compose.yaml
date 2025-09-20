@@ -222,7 +222,7 @@ services:
     api:
         build: keeper
         ports:
-        - "8000:8000"
+        - "8001:8000"
         volumes:
         - ./keeper:/app        # Optional: for live code reload in development
         environment:
