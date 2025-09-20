@@ -91,6 +91,17 @@ services:
 
         restart: unless-stopped
 
+    surveyer:
+        build: ./surveyer/
+        networks:
+            - postgres
+        ports:
+            - "8002:80"
+        depends_on:
+            - postgres
+        environment:
+            - DATABASE_URL=postgresql://postgres:changeme@postgres_container:5432/postgres
+
     api:
         build: keeper
         ports:
