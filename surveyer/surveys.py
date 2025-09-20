@@ -34,6 +34,11 @@ def delete_survey(survey_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/{survey_id}")
-def delete_survey(survey_id: int, db: Session = Depends(get_db)):
+def get_survey(survey_id: int, db: Session = Depends(get_db)):
     survey = db.query(Survey).filter(Survey.id == survey_id).first()
     return survey.content_json
+
+@router.get("/", response_model=List[SurveySch])
+def get_all_surveys(db: Session = Depends(get_db)):
+    surveys = db.query(Survey).all()
+    return surveys
