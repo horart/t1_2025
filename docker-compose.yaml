@@ -207,6 +207,7 @@ services:
             - postgres
         networks:
             - postgres
+            - heads
 
 
 networks:
