@@ -45,7 +45,7 @@ class LLMEmbedder:
         pass
 
     def embed(self, strings: list[str]):
-        client = OpenAI(api_key="<YOUR_TOKEN>", base_url="https://llm.t1v.scibox.tech/v1")
+        client = OpenAI(api_key=API_KEY, base_url="https://llm.t1v.scibox.tech/v1")
 
         emb = client.embeddings.create(
             model="bge-m3",

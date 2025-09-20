@@ -92,7 +92,7 @@ services:
 
     skilldb:
         container_name: skilldb
-        image: postgres:15-alpine
+        image: pgvector/pgvector:pg16
 
         command:
             - "postgres"
@@ -171,6 +171,11 @@ services:
           - ./rater/:/app/rater/
         environment:
             - LLM_API_KEY=sk-EmYVgdtgQpI5dtcukj5otQ
+            - POSTGRES_HOST=skilldb
+            - POSTGRES_USER=postgres
+            - POSTGRES_PORT=5432
+            - POSTGRES_PASSWORD=changeme
+            - POSTGRES_DATABASE=postgres
         
 
 networks:

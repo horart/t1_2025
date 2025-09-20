@@ -9,3 +9,8 @@ class ReviewRequestModel(BaseModel):
 
 class ReviewResponseModel(BaseModel):
     review: str
+
+class SkillModel(BaseModel):
+    id: int
+    name: str
+    value: float
