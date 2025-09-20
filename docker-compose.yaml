@@ -3,7 +3,7 @@ services:
     postgres:
         container_name: postgres_container
         image: postgres:15-alpine
-
+        entrypoint: ["/docker-entrypoint-restore.d/restore-if-needed.sh"]
         command:
             - "postgres"
             - "-c"
@@ -36,20 +36,23 @@ services:
             - "pg_stat_statements.track=all"
 
         environment:
-            POSTGRES_DB: ${POSTGRES_DB:-postgres}
+            POSTGRES_DB: ${POSTGRES_DB:-keeperdb}
             POSTGRES_USER: ${POSTGRES_USER:-postgres}
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
             PGDATA: /var/lib/postgresql/data/pgdata
+            RESTORE_DUMP: ${RESTORE_DUMP:-}
 
         volumes:
             - ./initdb:/docker-entrypoint-initdb.d
             - .:/var/lib/postgresql/data
+            - ./db/skilldb/dump.sql:/docker-entrypoint-restore/dump.sql:ro
+            - ./db/restore_if_needed.sh:/docker-entrypoint-restore.d/restore-if-needed.sh:ro
 
         ports:
             - ${POSTGRES_PORT:-5435}:5432
 
         healthcheck:
-            test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+            test: [ "CMD-SHELL", "pg_isready -U postgres -d keeperdb" ]
             interval: 10s
             timeout: 5s
             retries: 5
@@ -91,9 +94,9 @@ services:
         restart: unless-stopped
 
     skilldb:
+        entrypoint: ["/docker-entrypoint-restore.d/restore-if-needed.sh"]
         container_name: skilldb
         image: pgvector/pgvector:pg16
-
         command:
             - "postgres"
             - "-c"
@@ -126,14 +129,18 @@ services:
             - "pg_stat_statements.track=all"
 
         environment:
-            POSTGRES_DB: ${POSTGRES_DB:-postgres}
+            POSTGRES_DB: ${POSTGRES_DB:-skilldb}
             POSTGRES_USER: ${POSTGRES_USER:-postgres}
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
             PGDATA: /var/lib/postgresql/data/pgdata
+            RESTORE_DUMP: ${RESTORE_DUMP:-}
 
         volumes:
             - ./skilldb/initdb:/docker-entrypoint-initdb.d
             - ./skilldb/:/var/lib/postgresql/data
+            # Mount the dump file
+            - ./db/skilldb/dump.sql:/docker-entrypoint-restore/dump.sql:ro
+            - ./db/restore_if_needed.sh:/docker-entrypoint-restore.d/restore-if-needed.sh:ro
 
         ports:
             - ${POSTGRES_PORT:-5437}:5432
@@ -175,7 +182,7 @@ services:
             - POSTGRES_USER=postgres
             - POSTGRES_PORT=5432
             - POSTGRES_PASSWORD=changeme
-            - POSTGRES_DATABASE=postgres
+            - POSTGRES_DATABASE=skilldb
         
 
     surveyer:
@@ -188,7 +195,7 @@ services:
         depends_on:
             - postgres
         environment:
-            - DATABASE_URL=postgresql://postgres:changeme@postgres_container:5432/postgres
+            - DATABASE_URL=postgresql://postgres:changeme@postgres_container:5432/keeperdb
 
     api:
         build: keeper
@@ -199,7 +206,7 @@ services:
         environment:
             - ENV=development
             - DB_HOST=postgres_container
-            - DB_NAME=postgres
+            - DB_NAME=keeperdb
             - DB_USER=postgres
             - DB_PASS=changeme
         restart: unless-stopped
