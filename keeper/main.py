@@ -92,6 +92,37 @@ class EmployeeAchievement(EmployeeAchievementBase):
     
     class Config:
         from_attributes = True
+###courses
+class CourseBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    hardness: int = Field(ge=1, le=3, description="Сложность: 1-легкий, 2-средний, 3-сложный")
+
+class CourseCreate(CourseBase):
+    pass
+
+class Course(CourseBase):
+    id: int
+    
+    class Config:
+        from_attributes = True
+
+class EmployeeCourseBase(BaseModel):
+    course_id: int
+    course_started: Optional[datetime] = Field(default_factory=datetime.now)
+    course_completed: Optional[datetime] = None
+
+class EmployeeCourseCreate(EmployeeCourseBase):
+    pass
+
+class EmployeeCourse(EmployeeCourseBase):
+    id: int
+    employee_id: int
+    
+    class Config:
+        from_attributes = True
+
+###courses
 
 # Database connection helper
 @contextmanager
@@ -170,7 +201,7 @@ def get_employee_project_history(employee_id: int):
             return project_history
         
 
-        
+
 
 @app.post("/employees", response_model=Employee)
 def create_employee(employee: EmployeeCreate):
@@ -546,6 +577,199 @@ def delete_achievement(achievement_id: int):
             conn.commit()
             return {"message": "Achievement deleted successfully"}
 #endpoints of achievments (end)
+
+#endpoints of courses (begin)
+# GET /courses/ - все курсы
+@app.get("/courses/", response_model=List[Course])
+def get_courses():
+    """Получить все курсы"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM courses ORDER BY name")
+            courses = cur.fetchall()
+            return courses
+
+# GET /courses/{id} - конкретный курс
+@app.get("/courses/{course_id}", response_model=Course)
+def get_course(course_id: int):
+    """Получить курс по ID"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM courses WHERE id = %s", (course_id,))
+            course = cur.fetchone()
+            if not course:
+                raise HTTPException(status_code=404, detail="Course not found")
+            return course
+
+# POST /courses/ - создать курс
+@app.post("/courses/", response_model=Course, status_code=status.HTTP_201_CREATED)
+def create_course(course: CourseCreate):
+    """Создать новый курс"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO courses (name, description, hardness)
+                VALUES (%s, %s, %s)
+                RETURNING *
+            """, (course.name, course.description, course.hardness))
+            new_course = cur.fetchone()
+            conn.commit()
+            return new_course
+
+# PUT /courses/{id} - обновить курс
+@app.put("/courses/{course_id}", response_model=Course)
+def update_course(course_id: int, course: CourseCreate):
+    """Обновить курс"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE courses 
+                SET name = %s, description = %s, hardness = %s
+                WHERE id = %s
+                RETURNING *
+            """, (course.name, course.description, course.hardness, course_id))
+            updated_course = cur.fetchone()
+            if not updated_course:
+                raise HTTPException(status_code=404, detail="Course not found")
+            conn.commit()
+            return updated_course
+
+# DELETE /courses/{id} - удалить курс
+@app.delete("/courses/{course_id}")
+def delete_course(course_id: int):
+    """Удалить курс"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            # Сначала удаляем связи с сотрудниками
+            cur.execute("DELETE FROM courses_employees WHERE course_id = %s", (course_id,))
+            # Затем удаляем сам курс
+            cur.execute("DELETE FROM courses WHERE id = %s RETURNING id", (course_id,))
+            deleted = cur.fetchone()
+            if not deleted:
+                raise HTTPException(status_code=404, detail="Course not found")
+            conn.commit()
+            return {"message": "Course deleted successfully"}
+
+# GET /courses/{id}/employees - сотрудники курса
+@app.get("/courses/{course_id}/employees", response_model=List[dict])
+def get_course_employees(course_id: int):
+    """Получить всех сотрудников на курсе"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id FROM courses WHERE id = %s", (course_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Course not found")
+            
+            cur.execute("""
+                SELECT 
+                    e.*,
+                    ec.course_started,
+                    ec.course_completed,
+                    ec.id as enrollment_id
+                FROM courses_employees ec
+                JOIN employees e ON ec.employee_id = e.id
+                WHERE ec.course_id = %s
+                ORDER BY e.name
+            """, (course_id,))
+            
+            employees = cur.fetchall()
+            return employees
+
+# GET /employees/{id}/courses/ - курсы сотрудника
+@app.get("/employees/{employee_id}/courses/", response_model=List[dict])
+def get_employee_courses(employee_id: int):
+    """Получить все курсы сотрудника"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Employee not found")
+            
+            cur.execute("""
+                SELECT 
+                    c.*,
+                    ec.course_started,
+                    ec.course_completed,
+                    ec.id as enrollment_id
+                FROM courses_employees ec
+                JOIN courses c ON ec.course_id = c.id
+                WHERE ec.employee_id = %s
+                ORDER BY ec.course_started DESC
+            """, (employee_id,))
+            
+            courses = cur.fetchall()
+            return courses
+
+# POST /employees/{id}/courses/ - записать на курс
+@app.post("/employees/{employee_id}/courses/", response_model=EmployeeCourse, status_code=status.HTTP_201_CREATED)
+def enroll_employee_to_course(employee_id: int, course_data: EmployeeCourseCreate):
+    """Записать сотрудника на курс"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Employee not found")
+            
+            cur.execute("SELECT id FROM courses WHERE id = %s", (course_data.course_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Course not found")
+            
+            cur.execute("""
+                SELECT id FROM courses_employees 
+                WHERE employee_id = %s AND course_id = %s
+            """, (employee_id, course_data.course_id))
+            if cur.fetchone():
+                raise HTTPException(status_code=400, detail="Employee already enrolled in this course")
+            
+            cur.execute("""
+                INSERT INTO courses_employees (employee_id, course_id, course_started, course_completed)
+                VALUES (%s, %s, %s, %s)
+                RETURNING *
+            """, (employee_id, course_data.course_id, course_data.course_started, course_data.course_completed))
+            
+            enrollment = cur.fetchone()
+            conn.commit()
+            return enrollment
+
+# POST /employees/{id}/courses/{id}/complete/ - завершить курс
+@app.post("/employees/{employee_id}/courses/{course_id}/complete/", response_model=EmployeeCourse)
+def complete_employee_course(employee_id: int, course_id: int):
+    """Отметить курс как завершенный для сотрудника"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Employee not found")
+            
+            cur.execute("SELECT id FROM courses WHERE id = %s", (course_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Course not found")
+            
+            cur.execute("""
+                SELECT id, course_completed 
+                FROM courses_employees 
+                WHERE employee_id = %s AND course_id = %s
+            """, (employee_id, course_id))
+            
+            enrollment = cur.fetchone()
+            if not enrollment:
+                raise HTTPException(status_code=404, detail="Employee is not enrolled in this course")
+            
+            if enrollment['course_completed'] is not None:
+                raise HTTPException(status_code=400, detail="Course already completed")
+            
+            cur.execute("""
+                UPDATE courses_employees 
+                SET course_completed = CURRENT_TIMESTAMP
+                WHERE employee_id = %s AND course_id = %s
+                RETURNING *
+            """, (employee_id, course_id))
+            
+            updated_enrollment = cur.fetchone()
+            conn.commit()
+            return updated_enrollment
+#endpoints of courses (end)
+
 # Health check endpoints
 @app.get("/")
 def read_root():
