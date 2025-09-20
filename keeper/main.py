@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, status
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
@@ -65,6 +65,34 @@ class EmployeeWithProjects(Employee):
 class ProjectWithEmployees(Project):
     employees: List[dict] = []
 
+# Pydantic модели для ачивок
+class AchievementBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    image_path: Optional[str] = None
+
+class AchievementCreate(AchievementBase):
+    pass
+
+class Achievement(AchievementBase):
+    id: int
+    
+    class Config:
+        from_attributes = True
+
+class EmployeeAchievementBase(BaseModel):
+    employee_id: int
+    achievement_id: int
+
+class EmployeeAchievementCreate(EmployeeAchievementBase):
+    pass
+
+class EmployeeAchievement(EmployeeAchievementBase):
+    id: int
+    
+    class Config:
+        from_attributes = True
+
 # Database connection helper
 @contextmanager
 def get_db_connection():
@@ -111,6 +139,38 @@ def get_employee(employee_id: int):
             
             employee["projects"] = projects
             return employee
+
+
+
+@app.get("/employees/{employee_id}/project_history", response_model=List[dict])
+def get_employee_project_history(employee_id: int):
+    """Получить историю проектов сотрудника"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            # Проверяем существование сотрудника
+            cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Employee not found")
+            
+            # Получаем историю проектов сотрудника
+            cur.execute("""
+                SELECT 
+                    p.id as project_id,
+                    p.name as project_name,
+                    ep.job_start as start_date,
+                    ep.job_end as end_date,
+                    ep.position as position
+                FROM employees_projects ep
+                JOIN projects p ON ep.project_id = p.id
+                WHERE ep.employee_id = %s
+                ORDER BY ep.job_start DESC
+            """, (employee_id,))
+            
+            project_history = cur.fetchall()
+            return project_history
+        
+
+        
 
 @app.post("/employees", response_model=Employee)
 def create_employee(employee: EmployeeCreate):
@@ -228,66 +288,264 @@ def delete_project(project_id: int):
             conn.commit()
             return {"message": "Project deleted successfully"}
 
-# Employee-Project assignments CRUD
-@app.get("/assignments", response_model=List[EmployeeProject])
-def get_assignments():
+#begin of new endpoints
+@app.get("/projects/", response_model=List[Project])
+def get_projects_list():
+    """Получить список всех проектов"""
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT * FROM employees_projects ORDER BY id")
-            assignments = cur.fetchall()
-            return assignments
+            cur.execute("SELECT * FROM projects ORDER BY id")
+            projects = cur.fetchall()
+            return projects
 
-@app.post("/assignments", response_model=EmployeeProject)
-def create_assignment(assignment: EmployeeProjectCreate):
+@app.post("/projects/", response_model=Project, status_code=status.HTTP_201_CREATED)
+def create_project(project: ProjectCreate):
+    """Создать новый проект"""
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            # Check if employee and project exist
-            cur.execute("SELECT id FROM employees WHERE id = %s", (assignment.employee_id,))
-            if not cur.fetchone():
-                raise HTTPException(status_code=404, detail="Employee not found")
+            cur.execute("""
+                INSERT INTO projects (name, description)
+                VALUES (%s, %s)
+                RETURNING *
+            """, (project.name, project.description))
+            new_project = cur.fetchone()
+            conn.commit()
+            return new_project
+
+@app.get("/projects/{project_id}", response_model=ProjectWithEmployees)
+def get_project(project_id: int):
+    """Получить проект по ID"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM projects WHERE id = %s", (project_id,))
+            project = cur.fetchone()
+            if not project:
+                raise HTTPException(status_code=404, detail="Project not found")
             
-            cur.execute("SELECT id FROM projects WHERE id = %s", (assignment.project_id,))
+            cur.execute("""
+                SELECT e.*, ep.job_start, ep.job_end, ep.position as project_position
+                FROM employees_projects ep
+                JOIN employees e ON ep.employee_id = e.id
+                WHERE ep.project_id = %s
+                ORDER BY ep.job_start
+            """, (project_id,))
+            employees = cur.fetchall()
+            
+            project["employees"] = employees
+            return project
+
+@app.get("/projects/{project_id}/employees/", response_model=List[dict])
+def get_project_employees(project_id: int):
+    """Получить всех сотрудников проекта"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            # Проверяем существование проекта
+            cur.execute("SELECT id FROM projects WHERE id = %s", (project_id,))
             if not cur.fetchone():
                 raise HTTPException(status_code=404, detail="Project not found")
             
             cur.execute("""
+                SELECT e.*, ep.job_start, ep.job_end, ep.position as project_position, ep.id as assignment_id
+                FROM employees_projects ep
+                JOIN employees e ON ep.employee_id = e.id
+                WHERE ep.project_id = %s
+                ORDER BY e.name
+            """, (project_id,))
+            employees = cur.fetchall()
+            return employees
+
+@app.get("/projects/{project_id}/employees/{employee_id}", response_model=dict)
+def get_project_employee(project_id: int, employee_id: int):
+    """Получить конкретного сотрудника на проекте"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT e.*, ep.job_start, ep.job_end, ep.position as project_position, ep.id as assignment_id
+                FROM employees_projects ep
+                JOIN employees e ON ep.employee_id = e.id
+                WHERE ep.project_id = %s AND ep.employee_id = %s
+            """, (project_id, employee_id))
+            assignment = cur.fetchone()
+            
+            if not assignment:
+                raise HTTPException(status_code=404, detail="Employee not found on this project")
+            
+            return assignment
+
+# Pydantic модель для создания назначения
+class AssignEmployeeRequest(BaseModel):
+    position: str
+    job_start: datetime = Field(default_factory=datetime.now)
+    job_end: Optional[datetime] = None
+
+@app.post("/projects/{project_id}/employees/{employee_id}", response_model=EmployeeProject, status_code=status.HTTP_201_CREATED)
+def assign_employee_to_project(
+    project_id: int, 
+    employee_id: int, 
+    request: AssignEmployeeRequest
+):
+    """Привязать сотрудника к проекту"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            # Проверяем существование проекта и сотрудника
+            cur.execute("SELECT id FROM projects WHERE id = %s", (project_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Project not found")
+            
+            cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Employee not found")
+            
+            # Проверяем, не назначен ли уже сотрудник на проект
+            cur.execute("""
+                SELECT id FROM employees_projects 
+                WHERE project_id = %s AND employee_id = %s
+            """, (project_id, employee_id))
+            if cur.fetchone():
+                raise HTTPException(status_code=400, detail="Employee already assigned to this project")
+            
+            # Создаем назначение
+            cur.execute("""
                 INSERT INTO employees_projects (employee_id, project_id, job_start, job_end, position)
                 VALUES (%s, %s, %s, %s, %s)
                 RETURNING *
-            """, (assignment.employee_id, assignment.project_id, assignment.job_start, 
-                 assignment.job_end, assignment.position))
+            """, (employee_id, project_id, request.job_start, request.job_end, request.position))
+            
+            new_assignment = cur.fetchone()
+            conn.commit()
+            return new_assignment
+#end of new endpoints
+
+#endpoints of achievments (begin)
+# Эндпоинты для ачивок
+@app.get("/achievements/", response_model=List[Achievement])
+def get_achievements():
+    """Получить все типы ачивок"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM achievements ORDER BY id")
+            achievements = cur.fetchall()
+            return achievements
+
+@app.get("/employees/{employee_id}/achievements/", response_model=List[Achievement])
+def get_employee_achievements(employee_id: int):
+    """Получить все ачивки сотрудника"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            # Проверяем существование сотрудника
+            cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Employee not found")
+            
+            # Получаем ачивки сотрудника
+            cur.execute("""
+                SELECT a.* 
+                FROM achievements a
+                JOIN employees_achievements ea ON a.id = ea.achievement_id
+                WHERE ea.employee_id = %s
+                ORDER BY a.name
+            """, (employee_id,))
+            achievements = cur.fetchall()
+            return achievements
+
+@app.post("/employees/{employee_id}/achievements/{achievement_id}", response_model=EmployeeAchievement, status_code=status.HTTP_201_CREATED)
+def assign_achievement_to_employee(employee_id: int, achievement_id: int):
+    """Назначить ачивку сотруднику"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            # Проверяем существование сотрудника и ачивки
+            cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Employee not found")
+            
+            cur.execute("SELECT id FROM achievements WHERE id = %s", (achievement_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Achievement not found")
+            
+            # Проверяем, не назначена ли уже ачивка
+            cur.execute("""
+                SELECT id FROM employees_achievements 
+                WHERE employee_id = %s AND achievement_id = %s
+            """, (employee_id, achievement_id))
+            if cur.fetchone():
+                raise HTTPException(status_code=400, detail="Achievement already assigned to this employee")
+            
+            # Назначаем ачивку
+            cur.execute("""
+                INSERT INTO employees_achievements (employee_id, achievement_id)
+                VALUES (%s, %s)
+                RETURNING *
+            """, (employee_id, achievement_id))
+            
             new_assignment = cur.fetchone()
             conn.commit()
             return new_assignment
 
-@app.put("/assignments/{assignment_id}", response_model=EmployeeProject)
-def update_assignment(assignment_id: int, assignment: EmployeeProjectCreate):
+@app.delete("/employees/{employee_id}/achievements/{achievement_id}")
+def remove_achievement_from_employee(employee_id: int, achievement_id: int):
+    """Удалить ачивку у сотрудника"""
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                UPDATE employees_projects 
-                SET employee_id = %s, project_id = %s, job_start = %s, job_end = %s, position = %s
-                WHERE id = %s
-                RETURNING *
-            """, (assignment.employee_id, assignment.project_id, assignment.job_start, 
-                 assignment.job_end, assignment.position, assignment_id))
-            updated_assignment = cur.fetchone()
-            if not updated_assignment:
-                raise HTTPException(status_code=404, detail="Assignment not found")
-            conn.commit()
-            return updated_assignment
-
-@app.delete("/assignments/{assignment_id}")
-def delete_assignment(assignment_id: int):
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("DELETE FROM employees_projects WHERE id = %s RETURNING id", (assignment_id,))
+                DELETE FROM employees_achievements 
+                WHERE employee_id = %s AND achievement_id = %s
+                RETURNING id
+            """, (employee_id, achievement_id))
+            
             deleted = cur.fetchone()
             if not deleted:
-                raise HTTPException(status_code=404, detail="Assignment not found")
+                raise HTTPException(status_code=404, detail="Achievement not found for this employee")
+            
             conn.commit()
-            return {"message": "Assignment deleted successfully"}
+            return {"message": "Achievement removed from employee"}
 
+# Дополнительные CRUD операции для ачивок
+@app.post("/achievements/", response_model=Achievement, status_code=status.HTTP_201_CREATED)
+def create_achievement(achievement: AchievementCreate):
+    """Создать новую ачивку"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO achievements (name, description, image_path)
+                VALUES (%s, %s, %s)
+                RETURNING *
+            """, (achievement.name, achievement.description, achievement.image_path))
+            new_achievement = cur.fetchone()
+            conn.commit()
+            return new_achievement
+
+@app.put("/achievements/{achievement_id}", response_model=Achievement)
+def update_achievement(achievement_id: int, achievement: AchievementCreate):
+    """Обновить ачивку"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE achievements 
+                SET name = %s, description = %s, image_path = %s
+                WHERE id = %s
+                RETURNING *
+            """, (achievement.name, achievement.description, achievement.image_path, achievement_id))
+            updated_achievement = cur.fetchone()
+            if not updated_achievement:
+                raise HTTPException(status_code=404, detail="Achievement not found")
+            conn.commit()
+            return updated_achievement
+
+@app.delete("/achievements/{achievement_id}")
+def delete_achievement(achievement_id: int):
+    """Удалить ачивку"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            # Сначала удаляем связи с сотрудниками
+            cur.execute("DELETE FROM employees_achievements WHERE achievement_id = %s", (achievement_id,))
+            # Затем удаляем саму ачивку
+            cur.execute("DELETE FROM achievements WHERE id = %s RETURNING id", (achievement_id,))
+            deleted = cur.fetchone()
+            if not deleted:
+                raise HTTPException(status_code=404, detail="Achievement not found")
+            conn.commit()
+            return {"message": "Achievement deleted successfully"}
+#endpoints of achievments (end)
 # Health check endpoints
 @app.get("/")
 def read_root():
