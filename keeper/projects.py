@@ -30,7 +30,7 @@ def create_project(project: ProjectCreate):
             conn.commit()
             return new_project
 
-@router.get("/{project_id}", response_model=ProjectWithEmployees)
+@router.get("/{project_id}/", response_model=ProjectWithEmployees)
 def get_project(project_id: int):
     with get_db_connection() as conn:
         with conn.cursor() as cur:

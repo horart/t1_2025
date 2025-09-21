@@ -3,57 +3,91 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List, Optional
 from database import get_db_connection
-from models import BlueRatingCreate, BlueRating, BlueRatingHistoryResponse, ShopItem, PurchaseRequest, RedCoinsUpdate
+from models import RatingCreate, ShopItem, PurchaseRequest, RedCoinsUpdate
 
-router = APIRouter(prefix="/rating", tags=["Rating & Shop"])
+router = APIRouter(prefix="", tags=["Rating & Shop"])
 
-@router.get("/employees/{employee_id}/blue-rating-history/", response_model=BlueRatingHistoryResponse)
+# BLUE RATING
+@router.get("/employees/{employee_id}/blue-rating-history/")
 def get_blue_rating_history(employee_id: int, period: Optional[str] = None):
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT id, bcoins FROM employees WHERE id = %s", (employee_id,))
+            cur.execute("SELECT 1 FROM employees WHERE id = %s", (employee_id,))
             employee = cur.fetchone()
             if not employee:
                 raise HTTPException(status_code=404, detail="Employee not found")
+            query = """
+                SELECT delta, reason, created_at FROM blue_rating
+                WHERE employee_id = %s
+                ORDER BY created_at ASC
+            """
             
-            query = "SELECT * FROM blue_rating WHERE employee_id = %s"
-            params = [employee_id]
-            
-            if period and period.endswith('d'):
-                days = int(period[:-1])
-                query += " AND created_at >= CURRENT_TIMESTAMP - INTERVAL '%s days'"
-                params.append(days)
-            
-            query += " ORDER BY created_at DESC"
-            
-            cur.execute(query, params)
+            cur.execute(query, (employee_id, ))
             history = cur.fetchall()
             
             return {
-                "total_bcoins": employee['bcoins'],
+                "total_bcoins": sum(i['delta'] for i in history),
                 "history": history
             }
 
-@router.patch("/employees/{employee_id}/blue-rating/", response_model=BlueRating)
-def update_blue_rating(employee_id: int, rating_data: BlueRatingCreate):
+@router.patch("/employees/{employee_id}/blue-rating/")
+def update_blue_rating(employee_id: int, increment_data: RatingCreate):
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
             if not cur.fetchone():
                 raise HTTPException(status_code=404, detail="Employee not found")
-            
-            cur.execute("UPDATE employees SET bcoins = bcoins + %s WHERE id = %s", (rating_data.delta, employee_id))
-            
+                        
             cur.execute("""
-                INSERT INTO blue_rating (employee_id, delta, reason, created_at)
-                VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+                INSERT INTO blue_rating (employee_id, delta, reason)
+                VALUES (%s, %s, %s)
                 RETURNING *
-            """, (employee_id, rating_data.delta, rating_data.reason))
+            """, (employee_id, increment_data.delta, increment_data.reason))
             
             new_rating = cur.fetchone()
-            conn.commit()
             
             return new_rating
+        
+# RED RATING
+@router.patch("/employees/{employee_id}/red-rating/")
+def update_red_rating(employee_id: int, increment_data: RatingCreate):
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Employee not found")
+                        
+            cur.execute("""
+                INSERT INTO red_rating (employee_id, delta, reason)
+                VALUES (%s, %s, %s)
+                RETURNING *
+            """, (employee_id, increment_data.delta, increment_data.reason))
+            
+            new_rating = cur.fetchone()
+            
+            return new_rating
+        
+@router.get("/employees/{employee_id}/red-rating-history/")
+def get_red_rating_history(employee_id: int, period: Optional[str] = None):
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1 FROM employees WHERE id = %s", (employee_id,))
+            employee = cur.fetchone()
+            if not employee:
+                raise HTTPException(status_code=404, detail="Employee not found")
+            query = """
+                SELECT delta, reason, created_at FROM red_rating
+                WHERE employee_id = %s
+                ORDER BY created_at ASC
+            """
+            
+            cur.execute(query, (employee_id, ))
+            history = cur.fetchall()
+            
+            return {
+                "total_rcoins": sum(i['delta'] for i in history),
+                "history": history
+            }
 
 @router.get("/shop/", response_model=List[ShopItem])
 def get_shop_items():
@@ -81,7 +115,7 @@ def purchase_shop_item(item_id: int, purchase_data: PurchaseRequest):
             if employee['rcoins'] < total_price:
                 raise HTTPException(status_code=400, detail="Not enough rcoins")
             
-            cur.execute("UPDATE employees SET rcoins = rcoins - %s WHERE id = %s", (total_price, purchase_data.employee_id))
+            cur.execute("INSERT INTO red_rating (delta, reason, employee_id) VALUES (%s, %s, %s)", (-total_price, "Купил " + item['name'], purchase_data.employee_id))
             
             cur.execute("""
                 INSERT INTO purchases (employee_id, shop_item_id, quantity)
@@ -99,26 +133,4 @@ def purchase_shop_item(item_id: int, purchase_data: PurchaseRequest):
                 "quantity": purchase_data.quantity,
                 "total_cost": total_price,
                 "remaining_rcoins": employee['rcoins'] - total_price
-            }
-
-@router.patch("/employees/{employee_id}/red-coins/")
-def update_red_coins(employee_id: int, update_data: RedCoinsUpdate):
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT id, rcoins FROM employees WHERE id = %s", (employee_id,))
-            employee = cur.fetchone()
-            if not employee:
-                raise HTTPException(status_code=404, detail="Employee not found")
-            
-            new_balance = employee['rcoins'] + update_data.delta
-            cur.execute("UPDATE employees SET rcoins = %s WHERE id = %s", (new_balance, employee_id))
-            
-            conn.commit()
-            
-            return {
-                "message": "Red coins updated",
-                "employee_id": employee_id,
-                "delta": update_data.delta,
-                "new_balance": new_balance,
-                "reason": update_data.reason
             }

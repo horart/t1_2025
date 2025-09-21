@@ -3,7 +3,7 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
 from database import get_db_connection
-from models import CourseCreate, Course, EmployeeCourseCreate, EmployeeCourse
+from models import CourseCreate, Course, EmployeeCourse
 
 router = APIRouter(prefix="/courses", tags=["Courses"])
 
@@ -66,7 +66,7 @@ def delete_course(course_id: int):
             conn.commit()
             return {"message": "Course deleted successfully"}
 
-@router.get("/{course_id}/employees", response_model=List[dict])
+@router.get("/{course_id}/employees/", response_model=List[dict])
 def get_course_employees(course_id: int):
     with get_db_connection() as conn:
         with conn.cursor() as cur:
@@ -89,59 +89,36 @@ def get_course_employees(course_id: int):
             employees = cur.fetchall()
             return employees
 
-@router.get("/employees/{employee_id}/", response_model=List[dict])
-def get_employee_courses(employee_id: int):
+@router.post("/{course_id}/employees/{employee_id}/", response_model=EmployeeCourse, status_code=status.HTTP_201_CREATED)
+def enroll_employee_to_course(course_id: int, employee_id: int):
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
             if not cur.fetchone():
                 raise HTTPException(status_code=404, detail="Employee not found")
             
-            cur.execute("""
-                SELECT 
-                    c.*,
-                    ec.course_started,
-                    ec.course_completed,
-                    ec.id as enrollment_id
-                FROM courses_employees ec
-                JOIN courses c ON ec.course_id = c.id
-                WHERE ec.employee_id = %s
-                ORDER BY ec.course_started DESC
-            """, (employee_id,))
-            
-            courses = cur.fetchall()
-            return courses
-
-@router.post("/employees/{employee_id}/", response_model=EmployeeCourse, status_code=status.HTTP_201_CREATED)
-def enroll_employee_to_course(employee_id: int, course_data: EmployeeCourseCreate):
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
-            if not cur.fetchone():
-                raise HTTPException(status_code=404, detail="Employee not found")
-            
-            cur.execute("SELECT id FROM courses WHERE id = %s", (course_data.course_id,))
+            cur.execute("SELECT id FROM courses WHERE id = %s", (course_id,))
             if not cur.fetchone():
                 raise HTTPException(status_code=404, detail="Course not found")
             
             cur.execute("""
                 SELECT id FROM courses_employees 
                 WHERE employee_id = %s AND course_id = %s
-            """, (employee_id, course_data.course_id))
+            """, (employee_id, course_id))
             if cur.fetchone():
                 raise HTTPException(status_code=400, detail="Employee already enrolled in this course")
             
             cur.execute("""
-                INSERT INTO courses_employees (employee_id, course_id, course_started, course_completed)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO courses_employees (employee_id, course_id)
+                VALUES (%s, %s)
                 RETURNING *
-            """, (employee_id, course_data.course_id, course_data.course_started, course_data.course_completed))
+            """, (employee_id, course_id))
             
             enrollment = cur.fetchone()
             conn.commit()
             return enrollment
 
-@router.post("/employees/{employee_id}/{course_id}/complete/", response_model=EmployeeCourse)
+@router.post("/{course_id}/employees/{employee_id}/complete/", response_model=EmployeeCourse)
 def complete_employee_course(employee_id: int, course_id: int):
     with get_db_connection() as conn:
         with conn.cursor() as cur:

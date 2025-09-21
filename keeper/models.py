@@ -1,6 +1,6 @@
-from typing import Optional
-from pydantic import BaseModel
-import datetime
+from typing import List, Optional
+from pydantic import BaseModel, Field
+from datetime import datetime
 
 class EmployeeBase(BaseModel):
     name: str
@@ -100,8 +100,9 @@ class EmployeeCourseBase(BaseModel):
     course_started: Optional[datetime] = Field(default_factory=datetime.now)
     course_completed: Optional[datetime] = None
 
-class EmployeeCourseCreate(EmployeeCourseBase):
-    pass
+class RatingCreate(BaseModel):
+    delta: int
+    reason: str
 
 class EmployeeCourse(EmployeeCourseBase):
     id: int
@@ -117,26 +118,6 @@ class Employee(EmployeeBase): ##ДЛЯ РЕЙТИНГА И БАЛАНСА
     
     class Config:
         from_attributes = True
-
-# Pydantic модели для рейтинга
-class BlueRatingBase(BaseModel):
-    delta: int
-    reason: str
-
-class BlueRatingCreate(BlueRatingBase):
-    pass
-
-class BlueRating(BlueRatingBase):
-    id: int
-    employee_id: int
-    created_at: datetime
-    
-    class Config:
-        from_attributes = True
-
-class BlueRatingHistoryResponse(BaseModel):
-    total_bcoins: int
-    history: List[BlueRating]
 
 class ShopItemBase(BaseModel):
     name: str

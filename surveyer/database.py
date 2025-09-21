@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:changeme@127.0.0.1:5435/postgres")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:changeme@127.0.0.1:5435/keeperdb")
 
 engine = create_engine(DATABASE_URL)
 

@@ -5,6 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "cwd":"${workspaceFolder}/keeper",
+            "name": "Python Debugger: keeper",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "main:app",
+                "--reload"
+            ],
+            "env": {
+                "DB_PORT": "5435"
+            },
+            "jinja": true
+        },
+        {
             "name": "Python Debugger: FastAPI",
             "type": "debugpy",
             "request": "launch",
