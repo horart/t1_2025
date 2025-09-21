@@ -84,7 +84,7 @@ def get_employee_project_history(employee_id: int):
                 FROM employees_projects ep
                 JOIN projects p ON ep.project_id = p.id
                 WHERE ep.employee_id = %s
-                ORDER BY ep.job_start DESC
+                ORDER BY ep.job_start ASC
             """, (employee_id,))
             
             project_history = cur.fetchall()
