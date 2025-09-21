@@ -163,7 +163,6 @@ def userlk(uid):
     this_worker = requests.get(f'{KEEPER_URL}/employees/{uid}/').json()
     skills = requests.get(f'{KEEPER_URL}/employees/{uid}/skills/').json()
 
-
     return render_template('userlk.html', title="userlk", this_worker=this_worker, skills=skills)
 
 

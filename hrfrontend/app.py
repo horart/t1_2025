@@ -1,6 +1,8 @@
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, request
 from datetime import datetime
 import requests
+from settings import KEEPER_URL, PROJECTER_URL, RATER_URL, SEARCHER_URL, SURVEYER_URL
+import json
 
 
 app = Flask(__name__)
@@ -14,80 +16,48 @@ def index():
 def chat():
     return render_template('hrchat.html', title="chat")
 
+
 @app.route('/hrdashboard')
 def dashboard():
+    projs = requests.get(f'{PROJECTER_URL}/projects/hr/1').json()
+    proj_len = len(projs)
+    peoplesinpr = 0
+    for i in projs:
+        projs['employers_len'] = len(projs['employees'])
+        peoplesinpr += len(projs['employees'])
+    return render_template('hrdashboard.html', title="dashboard", proj_len=proj_len, )
 
-    return render_template('hrdashboard.html', title="dashboard")
 
 @app.route('/hremployees')
 def employees():
-    workers = [{
-        "employed_since": "2023-01-15T10:00:00Z",
-        "id": 1,
-        "name": "John Doe Updated",
-        "position": "Lead Developer",
-        "bcoins":100,
-        "projects": [
-            {
-                "description": "Обновленный корпоративный сайт",
-                "id": 1,
-                "job_end": None,
-                "job_start": "2024-01-15T09:00:00Z",
-                "name": "Веб-сайт Updated",
-                "project_position": "налитик"
-            }
-        ]
-    }]
+    workers = []
+    projs = requests.get(f'{PROJECTER_URL}/projects/hr/1').json()
+    for i in projs:
+        workers = workers + projs['employees']
     return render_template('hremployees.html', title="employees", workers=workers)
 
 
 @app.route('/userlk/<worker_id>')
 def userlk(worker_id):
-    this_worker = {
-        "employed_since": "2023-01-15T10:00:00Z",
-        "id": 1,
-        "name": "John Doe Updated",
-        "position": "Lead Developer",
-        "rcoins": 228,
-        "projects": [
-            {
-                "description": "Обновленный корпоративный сайт",
-                "id": 1,
-                "job_end": None,
-                "job_start": "2024-01-15T09:00:00Z",
-                "name": "еб-сайт Updated",
-                "project_position": "налитик"
-            }
-        ]
-    }
-    skills = [{"id": 1, "name": "python", "value": 9.4}]
+    this_worker = requests.get(f'{KEEPER_URL}/employees/{worker_id}/').json()
+    skills = requests.get(f'{KEEPER_URL}/employees/{worker_id}/skills/').json()
 
     return render_template('userlk.html', title="userlk", this_worker=this_worker, skills=skills)
 
 
 @app.route('/projects')
 def projects():
-    projs = [
-    {
-        "description": "Обновленный корпоративный сайт",
-        "id": 1,
-        "name": "Dеб-сайт Updated",
-        "employers":[],
-        'employers_len':2
-    },
-    {
-        "description": "Для теста",
-        "id": 3,
-        "name": "Тестовый проект",
-        "employers": [],
-        'employers_len': 3
-    }
-    ]
-    # для каждого проекта надо запросить участников
-    # for i in projs:
-    #     projs['employers'] = requests.get()
-    #     projs['employers_len'] = len(projs['employers'])
+    projs = requests.get(f'{PROJECTER_URL}/projects/hr/1').json()
+
+    for i in projs:
+        projs['employers_len'] = len(projs['employees'])
     return render_template('projects.html', title="projects", projects=projs)
+
+@app.route('/api/user/prompt')
+def prompt():
+    request_data = request.get_data()
+    return json.loads(requests.post(f"http://searcher:8000/hr/1/prompt/",data=request_data).json())["data"]
+
 
 
 if __name__ == '__main__':

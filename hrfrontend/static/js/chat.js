@@ -1,4 +1,29 @@
 // Функционал чата
+
+async function sendPromptToEmployee(promptData) {
+    try {
+        const response = await fetch("/api/user/prompt", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: promptData
+        });
+
+        if (!response.ok) {
+                return "Извините, что-то пошло не так! Попробуйте обратиться позже!"
+        }
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        return "Извините, что-то пошло не так! Попробуйте обратиться позже!";
+    }
+}
+
+
+
+// Функционал чата
 document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = document.getElementById('chatMessages');
     const messageInput = document.getElementById('messageInput');
@@ -13,12 +38,6 @@ document.addEventListener('DOMContentLoaded', function() {
             time: "10:00",
             type: "incoming"
         },
-        {
-            text: "Здравствуйте! У меня вопрос по поводу карьерного роста.",
-            sender: "Вы",
-            time: "10:02",
-            type: "outgoing"
-        }
     ];
 
     // Загрузка начальных сообщений
@@ -54,7 +73,10 @@ document.addEventListener('DOMContentLoaded', function() {
         scrollToBottom();
 
         // Имитация набора текста консультантом
-        simulateTyping();
+        result = simulateTyping(messageText);
+        const now = new Date();
+        const timeString = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+        addMessageToChat(result, 'HR Консультант', timeString, 'incoming');
     }
 
     // Функция добавления сообщения в чат
@@ -79,37 +101,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Имитация набора текста и ответа
-    function simulateTyping() {
+    function simulateTyping(messageText) {
         // Показываем индикатор набора текста
         typingIndicator.classList.add('active');
         sendMessageBtn.disabled = true;
 
         // Случайная задержка для имитации реального ответа
         const delay = Math.floor(Math.random() * 3000) + 1000;
+        result = sendPromptToEmployee(messageText);
 
         setTimeout(() => {
             typingIndicator.classList.remove('active');
             sendMessageBtn.disabled = false;
-
-            // Ответы консультанта
-            const responses = [
-                "Понятно, расскажите поподробнее о вашей ситуации.",
-                "У нас есть несколько программ для карьерного роста. Какое направление вас интересует?",
-                "Для решения этого вопроса вам нужно обратиться к вашему непосредственному руководителю.",
-                "Хорошо, я занесу эту информацию в вашу карточку. Что-то ещё?",
-                "По этому вопросу лучше проконсультироваться с менеджером по обучению.",
-                "Спасибо за обращение! Я уже работаю над вашим запросом."
-            ];
-
-            // Выбираем случайный ответ
-            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-
-            // Добавляем ответ консультанта
-            const now = new Date();
-            const timeString = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
-
-            addMessageToChat(randomResponse, 'HR Консультант', timeString, 'incoming');
-            scrollToBottom();
+            return result
 
         }, delay);
     }
