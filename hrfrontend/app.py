@@ -20,12 +20,17 @@ def chat():
 @app.route('/hrdashboard')
 def dashboard():
     projs = requests.get(f'{PROJECTER_URL}/projects/hr/1').json()
+    vacs = requests.get(f'{KEEPER_URL}/vacancies/').json()
+    vacs1 = [x for x  in vacs if x['status'] == 'open' and x['hr_id'] == 1]
+    vacancy_new_count = len(vacs1)
+    vacs2 = [x for x in vacs if x['status'] == 'close' and x['hr_id'] == 1]
+    vacancy_old_count = len(vacs2)
     proj_len = len(projs)
     peoplesinpr = 0
     for i in projs:
         projs['employers_len'] = len(projs['employees'])
         peoplesinpr += len(projs['employees'])
-    return render_template('hrdashboard.html', title="dashboard", proj_len=proj_len, )
+    return render_template('hrdashboard.html', title="dashboard", proj_len=proj_len, peoples=peoplesinpr, nvac=vacancy_new_count, oldvac=vacancy_old_count)
 
 
 @app.route('/hremployees')
