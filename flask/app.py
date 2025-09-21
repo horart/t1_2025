@@ -20,24 +20,9 @@ def index(uid):
     return render_template('index.html', title="Home", sitebar=sitebar, rcoins=rcoins, bcoins=bcoins, courses=courses)
 
 @app.route('/analytics')
-def analytics():
-    this_worker = {
-                        "employed_since": "2023-01-15T10:00:00Z",
-                        "id": 1,
-                        "name": "John Doe Updated",
-                        "position": "Lead Developer",
-                        "rcoins": 228,
-                        "projects": [
-                            {
-                                "description": "бновленный корпоративный сайт",
-                                "id": 1,
-                                "job_end": None,
-                                "job_start": "2024-01-15T09:00:00Z",
-                                "name": "еб-сайт Updated",
-                                "project_position": "налитик"
-                            }
-                        ]
-                    }
+@auth_required
+def analytics(uid):
+    this_worker = requests.get(f'{KEEPER_URL}/employees/{uid}/').json()
     leaderboard = [
                     {
                         "employed_since": "2023-01-15T10:00:00Z",
@@ -125,43 +110,19 @@ def analytics():
                         ]
                     }
     ]
-    awards = [
-                    {
-                        "description": "",
-                        "id": 1,
-                        "image_path": "/images/best-employee.png",
-                        "name": "Количество проектов"
-                    },
-                    {
-                        "description": "Award for best work",
-                        "id": 1,
-                        "image_path": "/images/best-employee.png",
-                        "name": "Best worker"
-                    },
-                    {
-                        "description": "Award for best work",
-                        "id": 1,
-                        "image_path": "/images/best-employee.png",
-                        "name": "Best worker"
-                    },
-                    {
-                        "description": "Award for best work",
-                        "id": 1,
-                        "image_path": "/images/best-employee.png",
-                        "name": "Best worker"
-                    }
-    ]
-    carier_path =[
+    awards = requests.get(f'{KEEPER_URL}/employees/{uid}/achievements/').json()
+    carier_path = [
     {
         "end_date": None,
         "position": "Аналитик",
         "project_id": 1,
         "project_name": "Веб-сайт Updated",
         "start_date": "2024-01-15T09:00:00Z"
-    }
-    ]
+    }]
+    # carier_path = requests.get(f"{KEEPER_URL}/career-path/?name={this_worker['position']}").json()
+
     # GET /employees/{id}/project-history/
-    projects = [{"employee_id":22}]
+    projects = requests.get(f'{KEEPER_URL}/employees/{uid}/project_history/').json()
 
     years_old_work = datetime.now().year - int(this_worker["employed_since"][:4])
     projects_len = len(projects)
@@ -171,71 +132,22 @@ def analytics():
                            projects_len=projects_len, carier_len=len(carier_path))
 
 @app.route('/courses')
-def courses():
-    it_courses = [
-        {
-            "course_completed": None,
-            "course_started": "2025-09-20T17:26:57.967585Z",
-            "description": "Основы",
-            "enrollment_id": 1,
-            "hardness": 1,
-            "id": 1,
-            "name": "Python"
-        }
-    ]
-    all_courses = [
-    {
-        "course_completed": None,
-        "course_started": "2025-09-20T17:26:57.967585Z",
-        "description": "Основы",
-        "enrollment_id": 1,
-        "hardness": 1,
-        "id": 1,
-        "name": "Python"
-    }
-    ]
+@auth_required
+def courses(uid):
+    it_courses = requests.get(f'{KEEPER_URL}/employees/{uid}/courses/').json()
+    all_courses = requests.get(f'{KEEPER_URL}/courses/').json()
     return render_template('courses.html', title="Courses", all_courses=all_courses, it_courses=it_courses)
 
 @app.route('/market')
-def market():
-    this_worker = {
-        "employed_since": "2023-01-15T10:00:00Z",
-        "id": 1,
-        "name": "John Doe Updated",
-        "position": "Lead Developer",
-        "rcoins": 228,
-        "projects": [
-            {
-                "description": "бновленный корпоративный сайт",
-                "id": 1,
-                "job_end": None,
-                "job_start": "2024-01-15T09:00:00Z",
-                "name": "еб-сайт Updated",
-                "project_position": "налитик"
-            }
-        ]
-    }
+@auth_required
+def market(uid):
+    this_worker = requests.get(f'{KEEPER_URL}/employees/{uid}/').json()
     return render_template('market.html', title="Courses", rcoins=this_worker["rcoins"])
 
 @app.route('/userlk')
-def userlk():
-    this_worker = {
-        "employed_since": "2023-01-15T10:00:00Z",
-        "id": 1,
-        "name": "John Doe Updated",
-        "position": "Lead Developer",
-        "rcoins": 228,
-        "projects": [
-            {
-                "description": "Обновленный корпоративный сайт",
-                "id": 1,
-                "job_end": None,
-                "job_start": "2024-01-15T09:00:00Z",
-                "name": "еб-сайт Updated",
-                "project_position": "налитик"
-            }
-        ]
-    }
+@auth_required
+def userlk(uid):
+    this_worker = requests.get(f'{KEEPER_URL}/employees/{uid}/').json()
     skills = [{"id":1, "name":"python", "value":9.4}]
 
     return render_template('userlk.html', title="userlk", this_worker=this_worker, skills=skills)
@@ -250,8 +162,6 @@ def chat():
 @app.route('/tests')
 def test():
     return render_template('tests.html', title="test")
-
-
 
 
 if __name__ == '__main__':
