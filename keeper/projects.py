@@ -4,9 +4,10 @@ from fastapi import APIRouter, HTTPException, status
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
-from database import get_db_connection
-from models import ProjectCreate, Project, ProjectWithEmployees, EmployeeProject
 
+from .database import get_db_connection
+from .models import ProjectCreate, Project, ProjectWithEmployees, EmployeeProject
+import common.llmclient
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
@@ -20,13 +21,14 @@ def get_projects_list():
 
 @router.post("/", response_model=Project, status_code=status.HTTP_201_CREATED)
 def create_project(project: ProjectCreate):
+    embedding = common.llmclient.LLMEmbedder().embed([project.description]).data[0].embedding
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                INSERT INTO projects (name, description, hr_id)
-                VALUES (%s, %s, %s)
+                INSERT INTO projects (name, description, hr_id, embedding)
+                VALUES (%s, %s, %s, %s::vector)
                 RETURNING *
-            """, (project.name, project.description, project.hr_id))
+            """, (project.name, project.description, project.hr_id, embedding))
             new_project = cur.fetchone()
             conn.commit()
             return new_project

@@ -2,8 +2,8 @@
 
 from fastapi import APIRouter, HTTPException, status
 from typing import List
-from database import get_db_connection
-from models import AchievementCreate, Achievement, EmployeeAchievement
+from .database import get_db_connection
+from .models import AchievementCreate, Achievement, EmployeeAchievement
 
 router = APIRouter(prefix="/achievements", tags=["Achievements"])
 

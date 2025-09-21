@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-import employees, projects, achievements, courses, rating, grades
+from . import employees, projects, achievements, courses, rating, grades
 
 app = FastAPI(
     title="Employee & Project Management API",
@@ -23,7 +23,7 @@ def read_root():
 @app.get("/db-test")
 def test_db():
     try:
-        from database import get_db_connection
+        from .database import get_db_connection
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT NOW() as now;")

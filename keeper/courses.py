@@ -2,8 +2,10 @@
 
 from fastapi import APIRouter, HTTPException, status
 from typing import List
-from database import get_db_connection
-from models import CourseCreate, Course, EmployeeCourse
+from .database import get_db_connection
+from .models import CourseCreate, Course, EmployeeCourse
+
+import common.llmclient
 
 router = APIRouter(prefix="/courses", tags=["Courses"])
 
@@ -27,13 +29,14 @@ def get_course(course_id: int):
 
 @router.post("/", response_model=Course, status_code=status.HTTP_201_CREATED)
 def create_course(course: CourseCreate):
+    embedding = common.llmclient.LLMEmbedder().embed([course.description]).data[0].embedding
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                INSERT INTO courses (name, description, hardness)
-                VALUES (%s, %s, %s)
+                INSERT INTO courses (name, description, hardness, embedding)
+                VALUES (%s, %s, %s, %s)
                 RETURNING *
-            """, (course.name, course.description, course.hardness))
+            """, (course.name, course.description, course.hardness, embedding))
             new_course = cur.fetchone()
             conn.commit()
             return new_course

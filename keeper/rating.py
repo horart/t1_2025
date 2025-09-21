@@ -2,8 +2,8 @@
 
 from fastapi import APIRouter, HTTPException, status
 from typing import List, Optional
-from database import get_db_connection
-from models import RatingCreate, ShopItem, PurchaseRequest, RedCoinsUpdate
+from .database import get_db_connection
+from .models import RatingCreate, ShopItem, PurchaseRequest, RedCoinsUpdate
 
 router = APIRouter(prefix="", tags=["Rating & Shop"])
 

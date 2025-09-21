@@ -69,7 +69,7 @@ services:
 
     pgadmin:
         container_name: pgadmin_container
-        image: dpage/pgadmin4:6.19
+        image: dpage/pgadmin4:latest
 
         depends_on:
             - postgres
@@ -214,11 +214,13 @@ services:
             - DATABASE_URL=postgresql://postgres:changeme@postgres_container:5432/keeperdb
 
     keeper:
-        build: keeper
+        build:
+            dockerfile: ./keeper/Dockerfile
         ports:
         - "8001:8000"
         volumes:
-        - ./keeper:/app        # Optional: for live code reload in development
+        - ./keeper:/app/keeper        # Optional: for live code reload in development
+        - ./common:/app/common
         environment:
             - ENV=development
             - DB_HOST=postgres_container
@@ -226,11 +228,31 @@ services:
             - DB_NAME=keeperdb
             - DB_USER=postgres
             - DB_PASS=changeme
+            - LLM_API_KEY=sk-EmYVgdtgQpI5dtcukj5otQ
         restart: unless-stopped
         depends_on:
             - postgres
         networks:
             - postgres
+            - heads
+
+    searcher:
+        build:
+            dockerfile: ./searcher/Dockerfile
+        ports:
+        - "8004:8000"
+        volumes:
+        - ./searcher:/app/searcher        # Optional: for live code reload in development
+        - ./common:/app/common
+        environment:
+            - ENV=development
+            - LLM_API_KEY=sk-EmYVgdtgQpI5dtcukj5otQ
+        restart: unless-stopped
+        depends_on:
+            - projecter
+            - keeper
+            - rater
+        networks:
             - heads
 
 
