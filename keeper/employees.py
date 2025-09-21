@@ -1,9 +1,10 @@
 # app/routers/employees.py
 
 from fastapi import APIRouter, HTTPException, status
-from typing import List
+from typing import List, Optional
+from datetime import datetime
 from database import get_db_connection
-from models import Achievement, EmployeeAchievement, EmployeeCreate, Employee, EmployeeWithProjects
+from models import Achievement, EmployeeAchievement, EmployeeCreate, Employee, EmployeeWithProjects, ReviewRequest
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
@@ -198,3 +199,42 @@ def get_employee_courses(employee_id: int):
             
             courses = cur.fetchall()
             return courses
+###ревью
+@router.post("/{employee_id}/review/")
+def update_employee_review(employee_id: int, review_data: Optional[ReviewRequest] = None):
+    """Обновить дату последнего ревью и/или грейд сотрудника"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            # Проверяем существование сотрудника
+            cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Employee not found")
+            
+            # Если указан grade_id, проверяем его существование
+            if review_data and review_data.grade_id:
+                cur.execute("SELECT id FROM grades WHERE id = %s", (review_data.grade_id,))
+                if not cur.fetchone():
+                    raise HTTPException(status_code=404, detail="Grade not found")
+            
+            # Обновляем данные
+            if review_data and review_data.grade_id:
+                cur.execute("""
+                    UPDATE employees 
+                    SET last_review_date = CURRENT_TIMESTAMP, grade_id = %s
+                    WHERE id = %s
+                """, (review_data.grade_id, employee_id))
+            else:
+                cur.execute("""
+                    UPDATE employees 
+                    SET last_review_date = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (employee_id,))
+            
+            conn.commit()
+            
+            return {
+                "message": "Review updated successfully",
+                "employee_id": employee_id,
+                "last_review_date": datetime.now(),
+                "grade_id": review_data.grade_id if review_data else None
+            }

@@ -52,7 +52,9 @@ class EmployeeWithProjects(Employee):
 
 class ProjectWithEmployees(Project):
     employees: List[dict] = []
-
+    
+    class Config:
+        from_attributes = True
 # Pydantic модели для ачивок
 class AchievementBase(BaseModel):
     name: str
@@ -144,3 +146,50 @@ class RedCoinsUpdate(BaseModel):
     delta: int
     reason: str
 ###courses
+
+class GradeBase(BaseModel):
+    grade: int
+    position: str
+    grade_name: str
+
+class GradeCreate(GradeBase):
+    pass
+
+class Grade(GradeBase):
+    id: int
+    
+    class Config:
+        from_attributes = True
+
+class ReviewRequest(BaseModel):
+    grade_id: Optional[int] = None
+
+class Employee(EmployeeBase):
+    id: int
+    bcoins: Optional[int] = 0 
+    rcoins: Optional[int] = 0 
+    last_review_date: Optional[datetime] = None
+    grade_id: Optional[int] = None 
+    
+    class Config:
+        from_attributes = True
+
+# ProjectBase
+class ProjectBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    hr_id: Optional[int] = None  # ← Добавляем
+
+class ProjectCreate(ProjectBase):
+    pass
+
+class Project(ProjectBase):
+    id: int
+    
+    class Config:
+        from_attributes = True
+
+class AssignEmployeeRequest(BaseModel):
+    position: str
+    job_start: datetime = Field(default_factory=datetime.now)
+    job_end: Optional[datetime] = None
