@@ -213,7 +213,7 @@ services:
             - postgres
             - heads
         ports:
-            - "8002:80"
+            - "8003:80"
         depends_on:
             - postgres
         environment:
