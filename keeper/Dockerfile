@@ -14,16 +14,19 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
-COPY requirements.txt .
+RUN mkdir common keeper
+COPY common/requirements.txt ./common
+COPY keeper/requirements.txt ./keeper
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r common/requirements.txt
+RUN pip install --no-cache-dir -r keeper/requirements.txt
 
-# Copy the rest of the app
-COPY . .
+COPY ./keeper ./keeper
+COPY ./common ./common
 
 # Expose port (optional metadata)
 EXPOSE 8000
 
 # Run Uvicorn — production ready
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "keeper.main:app", "--host", "0.0.0.0", "--port", "8000"]

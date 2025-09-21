@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from typing import List, Optional
-from database import get_db_connection
-from models import Grade, GradeCreate
+from .database import get_db_connection
+from .models import Grade, GradeCreate
 
 router = APIRouter(prefix="/grades", tags=["grades"])
 

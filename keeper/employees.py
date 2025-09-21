@@ -3,8 +3,8 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List, Optional
 from datetime import datetime
-from database import get_db_connection
-from models import Achievement, EmployeeAchievement, EmployeeCreate, Employee, EmployeeWithProjects, ReviewRequest
+from .database import get_db_connection
+from .models import Achievement, EmployeeAchievement, EmployeeCreate, Employee, EmployeeWithProjects, ReviewRequest
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
