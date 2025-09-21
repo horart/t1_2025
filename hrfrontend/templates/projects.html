@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проекты - HR Консультант</title>
+     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/projects.css') }}">
+</head>
+<body>
+    <!-- Шапка с гамбургер-меню -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">HR Консультант</div>
+            <nav class="nav" id="nav">
+                <ul>
+                    <li><a href="/hremployees" class="active">Сотрудники</a></li>
+                    <li><a href="/projects">Проекты</a></li>
+                    <li><a href="/hrdashboard">Аналитика</a></li>
+                    <li><a href="/hrchat">Чат ИИ консультантом</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="projects-header">
+            <h1>Проекты</h1>
+            <div class="dropdown">
+                <button class="add-project-btn" id="addProjectBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 5V19M5 12H19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Добавить проект
+                </button>
+                <div class="dropdown-content">
+                    <a href="#" id="createProjectOption">Создать проект</a>
+                    <a href="#">Импортировать проект</a>
+                    <a href="#">Шаблоны проектов</a>
+                </div>
+            </div>
+        </div>
+        <!--
+        <div class="projects-filters">
+            <div class="filter-group">
+                <label for="statusFilter">Статус:</label>
+                <select id="statusFilter">
+                    <option value="all">Все</option>
+                    <option value="active">Активные</option>
+                    <option value="completed">Завершенные</option>
+                    <option value="planned">Запланированные</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="sortBy">Сортировка:</label>
+                <select id="sortBy">
+                    <option value="newest">Сначала новые</option>
+                    <option value="oldest">Сначала старые</option>
+                    <option value="name">По названию</option>
+                    <option value="priority">По приоритету</option>
+                </select>
+            </div>
+        </div>-->
+
+        <table class="projects-table">
+            <thead>
+                <tr>
+                    <th>Название проекта</th>
+                    <th>Стэк технологий</th>
+                    <th>Команда</th>
+
+                </tr>
+            </thead>
+            <tbody id="projectsTableBody">
+            {%for pr in projects%}
+                <tr><td class="project-name">{{pr["name"]}}</td>
+                    <td>
+                        <div class="project-stack">
+                            <span class="stack-tag">{{pr["description"]}}</span>
+
+                        </div>
+                    </td>
+                    <td>
+                        <div class="project-team"><div class="team-count">{{pr["employers_len"]}}</div>
+                        </div>
+                    </td>
+                </tr>
+            {%endfor%}
+                <!-- Проекты будут добавляться через JavaScript -->
+            </tbody>
+        </table>
+    </main>
+
+    <!-- Модальное окно добавления проекта -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Добавить новый проект</h2>
+                <button class="close-button" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="projectForm" class="project-form">
+                <div class="form-group">
+                    <label for="projectName">Название проекта</label>
+                    <input type="text" id="projectName" name="projectName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="projectDescription">Описание</label>
+                    <textarea id="projectDescription" name="projectDescription" rows="3"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="projectStart">Дата начала</label>
+                        <input type="date" id="projectStart" name="projectStart" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="projectEnd">Дата окончания</label>
+                        <input type="date" id="projectEnd" name="projectEnd">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="projectStatus">Статус</label>
+                        <select id="projectStatus" name="projectStatus" required>
+                            <option value="active">Активный</option>
+                            <option value="completed">Завершенный</option>
+                            <option value="planned">Запланированный</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="projectPriority">Приоритет</label>
+                        <select id="projectPriority" name="projectPriority" required>
+                            <option value="high">Высокий</option>
+                            <option value="medium" selected>Средний</option>
+                            <option value="low">Низкий</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="projectTeam">Участники (через запятую)</label>
+                    <input type="text" id="projectTeam" name="projectTeam" placeholder="Иван, Мария, Алексей">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="cancel-button" id="cancelFormBtn">Отмена</button>
+                    <button type="submit" class="save-button">Создать проект</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/projects.js') }}"></script>
+
+</body>
+</html>

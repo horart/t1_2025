@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат - HR Консультант</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+</head>
+<body>
+    <!-- Шапка с гамбургер-меню -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">HR Консультант</div>
+            <nav class="nav" id="nav">
+                <ul>
+                    <li><a href="/hremployees" class="active">Сотрудники</a></li>
+                    <li><a href="/projects">Проекты</a></li>
+                    <li><a href="/hrdashboard">Аналитика</a></li>
+                    <li><a href="/hrchat">Чат ИИ консультантом</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="chat-header">
+            <h1>Чат с HR</h1>
+            <div class="chat-status">
+                <span class="status-indicator"></span>
+                <span class="status-text">Онлайн</span>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <!-- Сообщения будут добавляться через JavaScript -->
+            </div>
+
+            <div class="chat-input-container">
+                <div class="typing-indicator" id="typingIndicator">
+                    <span>HR набирает сообщение...</span>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="messageInput" placeholder="Введите ваше сообщение...">
+                    <button id="sendMessageBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+     <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+</body>
+</html>

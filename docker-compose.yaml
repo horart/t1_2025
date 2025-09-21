@@ -1,262 +1,243 @@
-    services:
+services:
 
-        postgres:
-            container_name: postgres_container
-            image: postgres:15-alpine
-            entrypoint: ["/docker-entrypoint-restore.d/restore-if-needed.sh"]
-            command:
-                - "postgres"
-                - "-c"
-                - "max_connections=50"
-                - "-c"
-                - "shared_buffers=1GB"
-                - "-c"
-                - "effective_cache_size=4GB"
-                - "-c"
-                - "work_mem=16MB"
-                - "-c"
-                - "maintenance_work_mem=512MB"
-                - "-c"
-                - "random_page_cost=1.1"
-                - "-c"
-                - "temp_file_limit=10GB"
-                - "-c"
-                - "log_min_duration_statement=200ms"
-                - "-c"
-                - "idle_in_transaction_session_timeout=10s"
-                - "-c"
-                - "lock_timeout=1s"
-                - "-c"
-                - "statement_timeout=60s"
-                - "-c"
-                - "shared_preload_libraries=pg_stat_statements"
-                - "-c"
-                - "pg_stat_statements.max=10000"
-                - "-c"
-                - "pg_stat_statements.track=all"
+    postgres:
+        container_name: postgres_container
+        image: pgvector/pgvector:pg16
+        command:
+            - "postgres"
+            - "-c"
+            - "max_connections=50"
+            - "-c"
+            - "shared_buffers=1GB"
+            - "-c"
+            - "effective_cache_size=4GB"
+            - "-c"
+            - "work_mem=16MB"
+            - "-c"
+            - "maintenance_work_mem=512MB"
+            - "-c"
+            - "random_page_cost=1.1"
+            - "-c"
+            - "temp_file_limit=10GB"
+            - "-c"
+            - "log_min_duration_statement=200ms"
+            - "-c"
+            - "idle_in_transaction_session_timeout=10s"
+            - "-c"
+            - "lock_timeout=1s"
+            - "-c"
+            - "statement_timeout=60s"
+            - "-c"
+            - "shared_preload_libraries=pg_stat_statements"
+            - "-c"
+            - "pg_stat_statements.max=10000"
+            - "-c"
+            - "pg_stat_statements.track=all"
 
-            environment:
-                POSTGRES_DB: ${POSTGRES_DB:-keeperdb}
-                POSTGRES_USER: ${POSTGRES_USER:-postgres}
-                POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
-                PGDATA: /var/lib/postgresql/data/pgdata
-                RESTORE_DUMP: ${RESTORE_DUMP:-}
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB:-keeperdb}
+            POSTGRES_USER: ${POSTGRES_USER:-postgres}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+            PGDATA: /var/lib/postgresql/data/pgdata
 
-            volumes:
-                - ./initdb:/docker-entrypoint-initdb.d
-                - .:/var/lib/postgresql/data
-                - ./db/skilldb/dump.sql:/docker-entrypoint-restore/dump.sql:ro
-                - ./db/restore_if_needed.sh:/docker-entrypoint-restore.d/restore-if-needed.sh
+        volumes:
+            - ./initdb:/docker-entrypoint-initdb.d
+            - .:/var/lib/postgresql/data
+            # Dump
+            - ./db/postgres/dump.sql:/dump.sql:ro
 
-            ports:
-                - ${POSTGRES_PORT:-5435}:5432
+        ports:
+            - ${POSTGRES_PORT:-5435}:5432
 
-            healthcheck:
-                test: [ "CMD-SHELL", "pg_isready -U postgres -d keeperdb" ]
-                interval: 10s
-                timeout: 5s
-                retries: 5
-                start_period: 10s
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U postgres -d keeperdb" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
 
-            restart: unless-stopped
+        restart: unless-stopped
 
-            deploy:
-                resources:
-                    limits:
-                        cpus: '1'
-                        memory: 4G
+        deploy:
+            resources:
+                limits:
+                    cpus: '1'
+                    memory: 4G
 
-            networks:
-                - postgres
+        networks:
+            - postgres
 
-        pgadmin:
-            container_name: pgadmin_container
-            image: dpage/pgadmin4:6.19
+    pgadmin:
+        container_name: pgadmin_container
+        image: dpage/pgadmin4:6.19
 
-            depends_on:
-                - postgres
+        depends_on:
+            - postgres
 
-            environment:
-                PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin@example.com}
-                PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-                PGADMIN_CONFIG_SERVER_MODE: 'True'
+        environment:
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin@example.com}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+            PGADMIN_CONFIG_SERVER_MODE: 'True'
 
-            volumes:
-                - ./pgadmin:/var/lib/pgadmin
+        volumes:
+            - ./pgadmin:/var/lib/pgadmin
 
-            ports:
-                - ${PGADMIN_PORT:-5050}:80
+        ports:
+            - ${PGADMIN_PORT:-5050}:80
 
-            networks:
-                - postgres
-                - skilldb
+        networks:
+            - postgres
+            - skilldb
 
-            restart: unless-stopped
+        restart: unless-stopped
 
-        skilldb:
-            entrypoint: ["/docker-entrypoint-restore.d/restore-if-needed.sh"]
-            # entrypoint: ["/bin/tail", "-f", "/dev/null"]
-            container_name: skilldb
-            image: pgvector/pgvector:pg16
-            command:
-                - "postgres"
-                - "-c"
-                - "max_connections=50"
-                - "-c"
-                - "shared_buffers=1GB"
-                - "-c"
-                - "effective_cache_size=4GB"
-                - "-c"
-                - "work_mem=16MB"
-                - "-c"
-                - "maintenance_work_mem=512MB"
-                - "-c"
-                - "random_page_cost=1.1"
-                - "-c"
-                - "temp_file_limit=10GB"
-                - "-c"
-                - "log_min_duration_statement=200ms"
-                - "-c"
-                - "idle_in_transaction_session_timeout=10s"
-                - "-c"
-                - "lock_timeout=1s"
-                - "-c"
-                - "statement_timeout=60s"
-                - "-c"
-                - "shared_preload_libraries=pg_stat_statements"
-                - "-c"
-                - "pg_stat_statements.max=10000"
-                - "-c"
-                - "pg_stat_statements.track=all"
+    skilldb:
+        container_name: skilldb
+        image: pgvector/pgvector:pg16
+        command:
+            - "postgres"
+            - "-c"
+            - "max_connections=50"
+            - "-c"
+            - "shared_buffers=1GB"
+            - "-c"
+            - "effective_cache_size=4GB"
+            - "-c"
+            - "work_mem=16MB"
+            - "-c"
+            - "maintenance_work_mem=512MB"
+            - "-c"
+            - "random_page_cost=1.1"
+            - "-c"
+            - "temp_file_limit=10GB"
+            - "-c"
+            - "log_min_duration_statement=200ms"
+            - "-c"
+            - "idle_in_transaction_session_timeout=10s"
+            - "-c"
+            - "lock_timeout=1s"
+            - "-c"
+            - "statement_timeout=60s"
+            - "-c"
+            - "shared_preload_libraries=pg_stat_statements"
+            - "-c"
+            - "pg_stat_statements.max=10000"
+            - "-c"
+            - "pg_stat_statements.track=all"
 
-            environment:
-                POSTGRES_DB: ${POSTGRES_DB:-skilldb}
-                POSTGRES_USER: ${POSTGRES_USER:-postgres}
-                POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
-                PGDATA: /var/lib/postgresql/data/pgdata
-                RESTORE_DUMP: ${RESTORE_DUMP:-}
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB:-skilldb}
+            POSTGRES_USER: ${POSTGRES_USER:-postgres}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+            PGDATA: /var/lib/postgresql/data/pgdata
 
-            volumes:
-                - ./skilldb/initdb:/docker-entrypoint-initdb.d
-                - ./skilldb/:/var/lib/postgresql/data
-                # Mount the dump file
-                - ./db/skilldb/dump.sql:/docker-entrypoint-restore/dump.sql:ro
-                - ./db/restore_if_needed.sh:/docker-entrypoint-restore.d/restore-if-needed.sh
+        volumes:
+            - ./skilldb/initdb:/docker-entrypoint-initdb.d
+            - ./skilldb/:/var/lib/postgresql/data
+            # Mount the dump file
+            - ./db/skilldb/dump.sql:/dump.sql:ro
 
-            ports:
-                - ${POSTGRES_PORT:-5437}:5432
+        ports:
+            - ${POSTGRES_PORT:-5437}:5432
 
-            healthcheck:
-                test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
-                interval: 10s
-                timeout: 5s
-                retries: 5
-                start_period: 10s
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
 
-            restart: unless-stopped
+        restart: unless-stopped
 
-            deploy:
-                resources:
-                    limits:
-                        cpus: '1'
-                        memory: 4G
+        deploy:
+            resources:
+                limits:
+                    cpus: '1'
+                    memory: 4G
 
-            networks:
-                - skilldb
+        networks:
+            - skilldb
 
-        rater:
-            build:
-                dockerfile: rater/Dockerfile
-            depends_on:
-                - skilldb
-            networks:
-                - heads
-                - skilldb
-            ports:
-            - "8001:8000"
-            volumes:
-            - ./common/:/app/common/
-            - ./rater/:/app/rater/
-            environment:
-                - LLM_API_KEY=sk-EmYVgdtgQpI5dtcukj5otQ
-                - POSTGRES_HOST=skilldb
-                - POSTGRES_USER=postgres
-                - POSTGRES_PORT=5432
-                - POSTGRES_PASSWORD=changeme
-                - POSTGRES_DATABASE=skilldb
-            
+    rater:
+        build:
+            dockerfile: rater/Dockerfile
+        depends_on:
+            - skilldb
+        networks:
+            - heads
+            - skilldb
+        ports:
+        - "8002:8000"
+        volumes:
+        - ./common/:/app/common/
+        - ./rater/:/app/rater/
+        environment:
+            - LLM_API_KEY=sk-EmYVgdtgQpI5dtcukj5otQ
+            - POSTGRES_HOST=skilldb
+            - POSTGRES_USER=postgres
+            - POSTGRES_PORT=5432
+            - POSTGRES_PASSWORD=changeme
+            - POSTGRES_DATABASE=skilldb
 
-        surveyer:
-            build: ./surveyer/
-            networks:
-                - postgres
-                - heads
-            ports:
-                - "8002:80"
-            depends_on:
-                - postgres
-            environment:
-                - DATABASE_URL=postgresql://postgres:changeme@postgres_container:5432/keeperdb
-
-        api:
-            build: keeper
-            ports:
-            - "8000:8000"
-            volumes:
-            - ./keeper:/app        # Optional: for live code reload in development
-            environment:
-                - ENV=development
-                - DB_HOST=postgres_container
-                - DB_NAME=keeperdb
-                - DB_USER=postgres
-                - DB_PASS=changeme
-            restart: unless-stopped
-            depends_on:
-                - postgres
-            networks:
-                - postgres
-                - heads
+    projecter:
+        build:
+            dockerfile: projecter/Dockerfile
+        depends_on:
+            - postgres
+        networks:
+            - heads
+            - postgres
+        ports:
+        - "8005:8000"
+        volumes:
+        - ./common/:/app/common/
+        - ./projecter/:/app/projecter/
+        environment:
+            - LLM_API_KEY=sk-EmYVgdtgQpI5dtcukj5otQ
+            - POSTGRES_HOST=postgres_container
+            - POSTGRES_USER=postgres
+            - POSTGRES_PORT=5432
+            - POSTGRES_PASSWORD=changeme
+            - POSTGRES_DATABASE=keeperdb
 
 
-    networks:
-        postgres:
-            driver: bridge
-        skilldb:
-            driver: bridge
-        heads:
-            driver: bridge
+    surveyer:
+        build: ./surveyer/
+        networks:
+            - postgres
+            - heads
+        ports:
+            - "8003:80"
+        depends_on:
+            - postgres
+        environment:
+            - DATABASE_URL=postgresql://postgres:changeme@postgres_container:5432/keeperdb
 
-    # ============ !!!!! ============
-    # Create 'pgadmin' dir
-    # mkdir pgadmin && sudo chown -R 5050:80 pgadmin
-    # -------------------------------
-    # Start:
-    # docker-compose --compatibility up -d
-    # -------------------------------
-    # Access to Postgres:
-    # localhost:5432
-    # Username: postgres (as a default)
-    # Password: changeme (as a default)
-    # -------------------------------
-    # Access to PgAdmin:
-    # URL: http://localhost:5050
-    # EMAIL: pgadmin@example.com
-    # Password: admin
-    # -------------------------------
-    # Connect to Postgres from PgAdmin
-    # Host name/address: postgres_container
-    # Port: 5432
-    # Maintenance DB: postgres
-    # Password: changeme
-    # -------------------------------
-    # Stop lifted containers:
-    # docker-compose --compatibility stop
-    # -------------------------------
-    # Start stopped containers
-    # docker-compose --compatibility start
-    # -------------------------------
-    # Stop and delete containers and network:
-    # docker-compose --compatibility down
-    # -------------------------------
-    # Clear project
-    # sudo rm -r pgadmin pgdata
+    keeper:
+        build: keeper
+        ports:
+        - "8001:8000"
+        volumes:
+        - ./keeper:/app        # Optional: for live code reload in development
+        environment:
+            - ENV=development
+            - DB_HOST=postgres_container
+            - DB_NAME=keeperdb
+            - DB_NAME=keeperdb
+            - DB_USER=postgres
+            - DB_PASS=changeme
+        restart: unless-stopped
+        depends_on:
+            - postgres
+        networks:
+            - postgres
+            - heads
+
+
+networks:
+    postgres:
+        driver: bridge
+    skilldb:
+        driver: bridge
+    heads:
+        driver: bridge
