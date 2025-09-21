@@ -202,7 +202,7 @@ services:
         build:
             dockerfile: projecter/Dockerfile
         depends_on:
-            - pos
+            - postgres
         networks:
             - heads
             - postgres
@@ -228,7 +228,7 @@ services:
         environment:
             - ENV=development
             - DB_HOST=postgres_container
-            - DB_NAME=postgres
+            - DB_NAME=keeperdb
             - DB_USER=postgres
             - DB_PASS=changeme
         restart: unless-stopped
@@ -239,10 +239,10 @@ services:
             - heads
 
 
-    networks:
-        postgres:
-            driver: bridge
-        skilldb:
-            driver: bridge
-        heads:
-            driver: bridge
+networks:
+    postgres:
+        driver: bridge
+    skilldb:
+        driver: bridge
+    heads:
+        driver: bridge
