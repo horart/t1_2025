@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from . import employees, projects, achievements, courses, rating, grades
+from . import employees, projects, achievements, courses, rating, grades, vacancies, database
 
 app = FastAPI(
     title="Employee & Project Management API",

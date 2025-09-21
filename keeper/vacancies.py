@@ -2,8 +2,8 @@
 
 from fastapi import APIRouter, HTTPException, status
 from typing import List, Optional
-from database import get_db_connection
-from models import Vacancy, VacancyCreate, VacancyWithDetails, VacancyStatusUpdate
+from .database import get_db_connection
+from .models import Vacancy, VacancyCreate, VacancyWithDetails, VacancyStatusUpdate
 
 router = APIRouter(prefix="/vacancies", tags=["Vacancies"])
 
