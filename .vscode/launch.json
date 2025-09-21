@@ -5,7 +5,30 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "cwd":"${workspaceFolder}/keeper",
+            "name": "Python Debugger: Flask",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "flask/app.py",
+                "FLASK_DEBUG": "1",
+                "KEEPER_URL": "http://localhost:8001",
+                "PROJECTER_URL": "http://localhost:8004",
+                "RATER_URL": "http://rater:8002",
+                "SEARCHER_URL": "http://searcher:8005",
+                "SURVEYER_URL": "http://surveyer:8003"
+                        },
+            "args": [
+                "run",
+                "--no-debugger",
+                "--port",
+                "8000"
+            ],
+            "jinja": true,
+            "autoStartBrowser": false
+        },
+        {
+            "cwd": "${workspaceFolder}/keeper",
             "name": "Python Debugger: keeper",
             "type": "debugpy",
             "request": "launch",

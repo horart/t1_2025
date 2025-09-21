@@ -1,25 +1,22 @@
 from flask import Flask, render_template
 from datetime import datetime
-
+import requests
 
 app = Flask(__name__)
 
+from login import auth_required
+from settings import KEEPER_URL, PROJECTER_URL, RATER_URL, SEARCHER_URL, SURVEYER_URL
+
+app.secret_key = 't1-super-secret'
+
 @app.route('/')
-def index():
-    courses = [
-    {
-        "course_completed": None,
-        "course_started": "2025-09-20T17:26:57.967585Z",
-        "description": "Основы",
-        "enrollment_id": 1,
-        "hardness": 1,
-        "id": 1,
-        "name": "Python"
-    }
-    ]
-    sitebar = 40
-    rcoins = 210
-    bcoins = 100
+@auth_required
+def index(uid):
+    user = requests.get(f'{KEEPER_URL}/employees/{uid}/').json()
+    courses = requests.get(f'{KEEPER_URL}/employees/{uid}/courses/').json()
+    bcoins = user['bcoins']
+    rcoins = user['rcoins']
+    sitebar = bcoins * 100 / 100
     return render_template('index.html', title="Home", sitebar=sitebar, rcoins=rcoins, bcoins=bcoins, courses=courses)
 
 @app.route('/analytics')
