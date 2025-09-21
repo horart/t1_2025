@@ -14,7 +14,7 @@ connection = psycopg2.connect(
     port=os.getenv('POSTGRES_PORT', 5437),
     user=os.getenv('POSTGRES_USER', 'postgres'),
     password=os.getenv('POSTGRES_PASSWORD', 'changeme'),
-    database=os.getenv('POSTGRES_DATABASE', 'postgres'),
+    database=os.getenv('POSTGRES_DATABASE', 'keeperdb'),
 )
 connection.autocommit = True
 data_manager = DataManager(connection)
