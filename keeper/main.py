@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, Body
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
@@ -26,6 +26,8 @@ class EmployeeCreate(EmployeeBase):
 
 class Employee(EmployeeBase):
     id: int
+    bcoins: Optional[int] = 0 
+    rcoins: Optional[int] = 0 
     
     class Config:
         from_attributes = True
@@ -122,6 +124,58 @@ class EmployeeCourse(EmployeeCourseBase):
     class Config:
         from_attributes = True
 
+class Employee(EmployeeBase): ##ДЛЯ РЕЙТИНГА И БАЛАНСА
+    id: int
+    bcoins: int = 0  # ← Добавляем
+    rcoins: int = 0  # ← Добавляем
+    
+    class Config:
+        from_attributes = True
+
+# Pydantic модели для рейтинга
+class BlueRatingBase(BaseModel):
+    delta: int
+    reason: str
+
+class BlueRatingCreate(BlueRatingBase):
+    pass
+
+class BlueRating(BlueRatingBase):
+    id: int
+    employee_id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class BlueRatingHistoryResponse(BaseModel):
+    total_bcoins: int
+    history: List[BlueRating]
+
+class ShopItemBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    price_rcoins: int
+    image_path: Optional[str] = None
+    category: Optional[str] = None
+
+class ShopItemCreate(ShopItemBase):
+    pass
+
+class ShopItem(ShopItemBase):
+    id: int
+    is_available: bool
+    
+    class Config:
+        from_attributes = True
+
+class PurchaseRequest(BaseModel):
+    employee_id: int
+    quantity: int = 1
+
+class RedCoinsUpdate(BaseModel):
+    delta: int
+    reason: str
 ###courses
 
 # Database connection helper
@@ -150,10 +204,11 @@ def get_employees():
 
 @app.get("/employees/{employee_id}", response_model=EmployeeWithProjects)
 def get_employee(employee_id: int):
+    """Получить сотрудника по ID с его проектами"""
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            # Get employee
-            cur.execute("SELECT * FROM employees WHERE id = %s", (employee_id,))
+            # Get employee with bcoins and rcoins
+            cur.execute("SELECT *, bcoins, rcoins FROM employees WHERE id = %s", (employee_id,))
             employee = cur.fetchone()
             if not employee:
                 raise HTTPException(status_code=404, detail="Employee not found")
@@ -199,8 +254,6 @@ def get_employee_project_history(employee_id: int):
             
             project_history = cur.fetchall()
             return project_history
-        
-
 
 
 @app.post("/employees", response_model=Employee)
@@ -770,6 +823,132 @@ def complete_employee_course(employee_id: int, course_id: int):
             return updated_enrollment
 #endpoints of courses (end)
 
+#endpoints of rating (begin)
+@app.get("/employees/{employee_id}/blue-rating-history/", response_model=BlueRatingHistoryResponse)
+def get_blue_rating_history(employee_id: int, period: Optional[str] = None):
+    """Получить историю bcoins"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, bcoins FROM employees WHERE id = %s", (employee_id,))
+            employee = cur.fetchone()
+            if not employee:
+                raise HTTPException(status_code=404, detail="Employee not found")
+            
+            query = "SELECT * FROM blue_rating WHERE employee_id = %s"
+            params = [employee_id]
+            
+            if period and period.endswith('d'):
+                days = int(period[:-1])
+                query += " AND created_at >= CURRENT_TIMESTAMP - INTERVAL '%s days'"
+                params.append(days)
+            
+            query += " ORDER BY created_at DESC"
+            
+            cur.execute(query, params)
+            history = cur.fetchall()
+            
+            return {
+                "total_bcoins": employee['bcoins'],
+                "history": history
+            }
+
+@app.patch("/employees/{employee_id}/blue-rating/", response_model=BlueRating)
+def update_blue_rating(employee_id: int, rating_data: BlueRatingCreate):
+    """Изменить bcoins рейтинг"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id FROM employees WHERE id = %s", (employee_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="Employee not found")
+            
+            # Обновляем bcoins
+            cur.execute("UPDATE employees SET bcoins = bcoins + %s WHERE id = %s", (rating_data.delta, employee_id))
+            
+            # Добавляем запись в историю
+            cur.execute("""
+                INSERT INTO blue_rating (employee_id, delta, reason, created_at)
+                VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+                RETURNING *
+            """, (employee_id, rating_data.delta, rating_data.reason))
+            
+            new_rating = cur.fetchone()
+            conn.commit()
+            
+            return new_rating
+
+@app.get("/shop/", response_model=List[ShopItem])
+def get_shop_items():
+    """Получить все товары в магазине"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM shop_items WHERE is_available = TRUE ORDER BY price_rcoins")
+            items = cur.fetchall()
+            return items
+
+@app.post("/shop/{item_id}/purchase/")
+def purchase_shop_item(item_id: int, purchase_data: PurchaseRequest):
+    """Купить товар в магазине"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, rcoins FROM employees WHERE id = %s", (purchase_data.employee_id,))
+            employee = cur.fetchone()
+            if not employee:
+                raise HTTPException(status_code=404, detail="Employee not found")
+            
+            cur.execute("SELECT * FROM shop_items WHERE id = %s AND is_available = TRUE", (item_id,))
+            item = cur.fetchone()
+            if not item:
+                raise HTTPException(status_code=404, detail="Item not found")
+            
+            total_price = item['price_rcoins'] * purchase_data.quantity
+            if employee['rcoins'] < total_price:
+                raise HTTPException(status_code=400, detail="Not enough rcoins")
+            
+            # Списание rcoins
+            cur.execute("UPDATE employees SET rcoins = rcoins - %s WHERE id = %s", (total_price, purchase_data.employee_id))
+            
+            # Записываем покупку
+            cur.execute("""
+                INSERT INTO purchases (employee_id, shop_item_id, quantity)
+                VALUES (%s, %s, %s)
+                RETURNING *
+            """, (purchase_data.employee_id, item_id, purchase_data.quantity))
+            
+            purchase = cur.fetchone()
+            conn.commit()
+            
+            return {
+                "message": "Purchase successful",
+                "purchase_id": purchase['id'],
+                "item_name": item['name'],
+                "quantity": purchase_data.quantity,
+                "total_cost": total_price,
+                "remaining_rcoins": employee['rcoins'] - total_price
+            }
+
+@app.patch("/employees/{employee_id}/red-coins/")
+def update_red_coins(employee_id: int, update_data: RedCoinsUpdate):
+    """Изменить количество rcoins"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, rcoins FROM employees WHERE id = %s", (employee_id,))
+            employee = cur.fetchone()
+            if not employee:
+                raise HTTPException(status_code=404, detail="Employee not found")
+            
+            new_balance = employee['rcoins'] + update_data.delta
+            cur.execute("UPDATE employees SET rcoins = %s WHERE id = %s", (new_balance, employee_id))
+            
+            conn.commit()
+            
+            return {
+                "message": "Red coins updated",
+                "employee_id": employee_id,
+                "delta": update_data.delta,
+                "new_balance": new_balance,
+                "reason": update_data.reason
+            }
+#endpoints of rating (end)
 # Health check endpoints
 @app.get("/")
 def read_root():
