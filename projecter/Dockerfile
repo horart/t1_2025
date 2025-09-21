@@ -14,15 +14,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first (for better caching)
-COPY rater/requirements.txt ./rater/
+COPY projecter/requirements.txt ./projecter/
 COPY common/requirements.txt ./common/
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r rater/requirements.txt
+RUN pip install --no-cache-dir -r projecter/requirements.txt
 RUN pip install --no-cache-dir -r common/requirements.txt
 
 # Copy project code
-COPY rater ./rater/
+COPY projecter ./projecter/
 COPY common ./common/
 
 # Optional: Create non-root user for security
@@ -34,5 +34,5 @@ USER appuser
 EXPOSE 8000
 
 # Command to run the application
-CMD ["uvicorn", "rater.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "projecter.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 # CMD ["tail",  "-f", "/dev/null"]
