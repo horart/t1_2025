@@ -45,7 +45,7 @@ services:
         volumes:
             - ./initdb:/docker-entrypoint-initdb.d
             - .:/var/lib/postgresql/data
-            - ./db/postgres/dump.sql:/docker-entrypoint-restore/dump.sql:ro
+            - ./db/skilldb/dump.sql:/docker-entrypoint-restore/dump.sql:ro
             - ./db/restore_if_needed.sh:/docker-entrypoint-restore.d/restore-if-needed.sh
 
         ports:
@@ -173,7 +173,7 @@ services:
             - heads
             - skilldb
         ports:
-        - "8001:8000"
+        - "8002:8000"
         volumes:
         - ./common/:/app/common/
         - ./rater/:/app/rater/
@@ -184,6 +184,27 @@ services:
             - POSTGRES_PORT=5432
             - POSTGRES_PASSWORD=changeme
             - POSTGRES_DATABASE=skilldb
+
+    projecter:
+        build:
+            dockerfile: projecter/Dockerfile
+        depends_on:
+            - postgres
+        networks:
+            - heads
+            - postgres
+        ports:
+        - "8005:8000"
+        volumes:
+        - ./common/:/app/common/
+        - ./projecter/:/app/projecter/
+        environment:
+            - LLM_API_KEY=sk-EmYVgdtgQpI5dtcukj5otQ
+            - POSTGRES_HOST=postgres_container
+            - POSTGRES_USER=postgres
+            - POSTGRES_PORT=5432
+            - POSTGRES_PASSWORD=changeme
+            - POSTGRES_DATABASE=keeperdb
         
 
     surveyer:
@@ -192,43 +213,23 @@ services:
             - postgres
             - heads
         ports:
-            - "8002:80"
+            - "8003:80"
         depends_on:
             - postgres
         environment:
             - DATABASE_URL=postgresql://postgres:changeme@postgres_container:5432/keeperdb
 
-    projecter:
-        build:
-            dockerfile: projecter/Dockerfile
-        depends_on:
-            - pos
-        networks:
-            - heads
-            - postgres
-        ports:
-          - "8001:8000"
-        volumes:
-          - ./common/:/app/common/
-          - ./rater/:/app/rater/
-        environment:
-            - LLM_API_KEY=sk-EmYVgdtgQpI5dtcukj5otQ
-            - POSTGRES_HOST=skilldb
-            - POSTGRES_USER=postgres
-            - POSTGRES_PORT=5432
-            - POSTGRES_PASSWORD=changeme
-            - POSTGRES_DATABASE=skilldb
-
-    api:
+    keeper:
         build: keeper
         ports:
-        - "8000:8000"
+        - "8001:8000"
         volumes:
         - ./keeper:/app        # Optional: for live code reload in development
         environment:
             - ENV=development
             - DB_HOST=postgres_container
-            - DB_NAME=postgres
+            - DB_NAME=keeperdb
+            - DB_NAME=keeperdb
             - DB_USER=postgres
             - DB_PASS=changeme
         restart: unless-stopped
@@ -239,10 +240,10 @@ services:
             - heads
 
 
-    networks:
-        postgres:
-            driver: bridge
-        skilldb:
-            driver: bridge
-        heads:
-            driver: bridge
+networks:
+    postgres:
+        driver: bridge
+    skilldb:
+        driver: bridge
+    heads:
+        driver: bridge
