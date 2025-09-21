@@ -213,6 +213,18 @@ services:
         environment:
             - DATABASE_URL=postgresql://postgres:changeme@postgres_container:5432/keeperdb
 
+    empl_front:
+        build: ./flask
+        networks:
+            - postgres
+            - heads
+        volumes:
+            - ./flask:/app/flask
+        ports:
+            - "8008:5000"
+        environment:
+            - DATABASE_URL=postgresql://postgres:changeme@postgres_container:5432/keeperdb
+
     keeper:
         build:
             dockerfile: ./keeper/Dockerfile
