@@ -219,7 +219,7 @@ services:
             - POSTGRES_PASSWORD=changeme
             - POSTGRES_DATABASE=skilldb
 
-    api:
+    keeper:
         build: keeper
         ports:
         - "8001:8000"
