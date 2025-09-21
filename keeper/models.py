@@ -115,8 +115,8 @@ class EmployeeCourse(EmployeeCourseBase):
 
 class Employee(EmployeeBase): ##ДЛЯ РЕЙТИНГА И БАЛАНСА
     id: int
-    bcoins: int = 0  # ← Добавляем
-    rcoins: int = 0  # ← Добавляем
+    bcoins: int = 0  
+    rcoins: int = 0  
     
     class Config:
         from_attributes = True
@@ -193,3 +193,29 @@ class AssignEmployeeRequest(BaseModel):
     position: str
     job_start: datetime = Field(default_factory=datetime.now)
     job_end: Optional[datetime] = None
+
+# models.py (только часть для вакансий)
+
+class VacancyBase(BaseModel):
+    project_id: int
+    hr_id: int
+    position: str
+    description: Optional[str] = None  # ← ДОБАВЛЯЕМ
+    status: Optional[str] = 'open'
+
+class VacancyCreate(VacancyBase):
+    pass
+
+class Vacancy(VacancyBase):
+    id: int
+    created_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+class VacancyWithDetails(Vacancy):
+    project_name: Optional[str] = None
+    hr_name: Optional[str] = None
+
+class VacancyStatusUpdate(BaseModel):
+    status: str

@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 
-import employees, projects, achievements, courses, rating, grades
-
+import employees, projects, achievements, courses, rating, grades, vacancies
 app = FastAPI(
     title="Employee & Project Management API",
     description="Modular FastAPI app with routers for employees, projects, achievements, courses, and rating/shop",
@@ -15,6 +14,7 @@ app.include_router(achievements.router)
 app.include_router(courses.router)
 app.include_router(rating.router)
 app.include_router(grades.router)
+app.include_router(vacancies.router)
 
 @app.get("/")
 def read_root():
