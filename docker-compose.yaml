@@ -173,7 +173,7 @@ services:
             - heads
             - skilldb
         ports:
-        - "8001:8000"
+        - "8002:8000"
         volumes:
         - ./common/:/app/common/
         - ./rater/:/app/rater/
@@ -218,27 +218,6 @@ services:
             - postgres
         environment:
             - DATABASE_URL=postgresql://postgres:changeme@postgres_container:5432/keeperdb
-
-    projecter:
-        build:
-            dockerfile: projecter/Dockerfile
-        depends_on:
-            - postgres
-        networks:
-            - heads
-            - postgres
-        ports:
-          - "8001:8000"
-        volumes:
-          - ./common/:/app/common/
-          - ./rater/:/app/rater/
-        environment:
-            - LLM_API_KEY=sk-EmYVgdtgQpI5dtcukj5otQ
-            - POSTGRES_HOST=skilldb
-            - POSTGRES_USER=postgres
-            - POSTGRES_PORT=5432
-            - POSTGRES_PASSWORD=changeme
-            - POSTGRES_DATABASE=skilldb
 
     keeper:
         build: keeper
