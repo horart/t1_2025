@@ -17,3 +17,13 @@ class DataManager:
                 LIMIT %s""", (project_embedding, limit))
             
             return cur.fetchall()
+        
+    def get_most_similar_courses(self, project_embedding: List[float], limit: int = 5):
+        with self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT id, name, description, hardness, (embedding <=> %s::vector) as dist
+                FROM courses
+                ORDER BY dist ASC
+                LIMIT %s""", (project_embedding, limit))
+            
+            return cur.fetchall()

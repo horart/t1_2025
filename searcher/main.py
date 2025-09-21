@@ -35,7 +35,7 @@ def review(id: int, input: ChatPromptModel) -> ChatResponseModel:
 
     return ChatResponseModel(response=output)
 
-@app.post("/hr/prompt/")
+@app.post("/hr/{id}prompt/")
 def selfreview(review_model: ReviewRequestModel) -> ReviewResponseModel:
     return ReviewResponseModel(review=self_review_client.prompt(review_model.body))
 

@@ -23,4 +23,4 @@ def query(**kwargs):
         return "Unknown query type or domain."
     
 def search_for_courses():
-    return ""
+    return 
