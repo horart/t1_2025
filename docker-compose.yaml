@@ -173,7 +173,7 @@ services:
             - heads
             - skilldb
         ports:
-        - "8001:8000"
+        - "8002:8000"
         volumes:
         - ./common/:/app/common/
         - ./rater/:/app/rater/
@@ -192,7 +192,7 @@ services:
             - postgres
             - heads
         ports:
-            - "8002:80"
+            - "8003:80"
         depends_on:
             - postgres
         environment:
@@ -207,17 +207,17 @@ services:
             - heads
             - postgres
         ports:
-          - "8001:8000"
+          - "8004:8000"
         volumes:
           - ./common/:/app/common/
           - ./rater/:/app/rater/
         environment:
             - LLM_API_KEY=sk-EmYVgdtgQpI5dtcukj5otQ
-            - POSTGRES_HOST=skilldb
+            - POSTGRES_HOST=postgres_container
             - POSTGRES_USER=postgres
             - POSTGRES_PORT=5432
             - POSTGRES_PASSWORD=changeme
-            - POSTGRES_DATABASE=skilldb
+            - POSTGRES_DATABASE=keeperdb
 
     keeper:
         build: keeper

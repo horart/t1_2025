@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from database import get_db_connection
 from models import ProjectCreate, Project, ProjectWithEmployees, EmployeeProject
 
+
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
 @router.get("/", response_model=List[Project])
@@ -22,10 +23,10 @@ def create_project(project: ProjectCreate):
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                INSERT INTO projects (name, description)
-                VALUES (%s, %s)
+                INSERT INTO projects (name, description, hr_id)
+                VALUES (%s, %s, %s)
                 RETURNING *
-            """, (project.name, project.description))
+            """, (project.name, project.description, project.hr_id))
             new_project = cur.fetchone()
             conn.commit()
             return new_project
@@ -130,10 +131,10 @@ def update_project(project_id: int, project: ProjectCreate):
         with conn.cursor() as cur:
             cur.execute("""
                 UPDATE projects 
-                SET name = %s, description = %s
+                SET name = %s, description = %s, hr_id = %s
                 WHERE id = %s
                 RETURNING *
-            """, (project.name, project.description, project_id))
+            """, (project.name, project.description, project.hr_id, project_id))
             updated_project = cur.fetchone()
             if not updated_project:
                 raise HTTPException(status_code=404, detail="Project not found")
@@ -151,3 +152,24 @@ def delete_project(project_id: int):
                 raise HTTPException(status_code=404, detail="Project not found")
             conn.commit()
             return {"message": "Project deleted successfully"}
+##ручки hr
+
+# Добавляем новую ручку для получения проектов HR-а
+@router.get("/hr/{hr_id}/", response_model=List[Project])
+def get_hr_projects(hr_id: int):
+    """Получить все проекты HR-менеджера"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            # Проверяем существование HR-а (сотрудника)
+            cur.execute("SELECT id FROM employees WHERE id = %s", (hr_id,))
+            if not cur.fetchone():
+                raise HTTPException(status_code=404, detail="HR manager not found")
+            
+            cur.execute("""
+                SELECT * FROM projects 
+                WHERE hr_id = %s 
+                ORDER BY name
+            """, (hr_id,))
+            
+            projects = cur.fetchall()
+            return projects
