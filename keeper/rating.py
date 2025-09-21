@@ -134,3 +134,25 @@ def purchase_shop_item(item_id: int, purchase_data: PurchaseRequest):
                 "total_cost": total_price,
                 "remaining_rcoins": employee['rcoins'] - total_price
             }
+        
+@router.get("/leaderboard/blue-coins", response_model=List[dict])
+def get_blue_coins_leaderboard(limit: int = 10):
+    """Получить лидерборд по Blue Coins"""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT 
+                    e.id,
+                    e.name,
+                    e.position,
+                    COALESCE(SUM(br.delta), 0) as total_blue_coins,
+                    COUNT(br.id) as transactions_count
+                FROM employees e
+                LEFT JOIN blue_rating br ON e.id = br.employee_id
+                GROUP BY e.id, e.name, e.position
+                ORDER BY total_blue_coins DESC
+                LIMIT %s
+            """, (limit,))
+            
+            leaderboard = cur.fetchall()
+            return leaderboard
